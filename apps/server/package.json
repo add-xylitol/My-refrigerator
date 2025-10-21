@@ -1,0 +1,11 @@
+{
+  "name": "@smart-fridge/server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI vision microservice placeholder for smart fridge MVP.",
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Vision service scaffolding pending implementation'",
+    "build": "echo 'No build step defined yet'"
+  }
+}

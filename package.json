@@ -1,0 +1,22 @@
+{
+  "name": "smart-fridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MVP workspace for AI-powered fridge inventory and recipe flows.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:client": "npm --prefix apps/client run dev",
+    "build:client": "npm --prefix apps/client run build",
+    "lint:client": "npm --prefix apps/client run lint",
+    "test:client": "npm --prefix apps/client run test",
+    "dev:server": "npm --prefix apps/server run dev",
+    "build:server": "npm --prefix apps/server run build"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "license": "MIT"
+}

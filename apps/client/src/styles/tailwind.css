@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply min-h-screen bg-transparent font-sans antialiased text-slate-100;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(192, 38, 211, 0.25), transparent 40%),
+    radial-gradient(circle at 90% 10%, rgba(14, 165, 233, 0.2), transparent 45%),
+    radial-gradient(circle at 50% 90%, rgba(124, 122, 255, 0.18), transparent 55%),
+    #0a0515;
+}
+
+#root {
+  @apply min-h-screen;
+}
+
+::selection {
+  @apply bg-brand-400/40 text-white;
+}
