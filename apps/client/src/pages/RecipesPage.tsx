@@ -72,7 +72,10 @@ export const RecipesPage = () => {
       pushMessage({
         id: nanoid(),
         role: 'assistant',
-        content: '抱歉，暂时无法生成菜谱，请稍后再试。'
+        content:
+          error instanceof Error
+            ? `抱歉，菜谱生成失败：${error.message}`
+            : '抱歉，暂时无法生成菜谱，请稍后再试。'
       });
     } finally {
       setIsLoading(false);

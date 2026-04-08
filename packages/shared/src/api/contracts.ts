@@ -2,7 +2,8 @@ import type { ItemDTO, RecipeDTO, ShelfDTO } from '../types/fridge';
 import type { VisionRecognizeRequest, VisionRecognizeResponse } from '../types/vision';
 
 export type AnonAuthResponse = {
-  token: string;
+  profileId: string;
+  accessToken: string;
   expiresAt: string;
 };
 
