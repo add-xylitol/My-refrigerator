@@ -8,6 +8,8 @@
 
 **Tech Stack:** Taro 4 + React 18 + TypeScript / FastAPI + Pydantic v2 / Supabase (Postgres + Auth + Storage) / GLM-5V-Turbo (智谱AI)
 
+**UX Reference:** `docs/plans/2026-04-08-miniprogram-ux-design.md` — 页面布局、交互规范、视觉风格以此文档为准。
+
 ---
 
 ## Phase 1: 数据库 + 后端（先让后端能真正工作）
@@ -75,6 +77,42 @@ CREATE TABLE IF NOT EXISTS public.shopping_items (
   created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
 );
 CREATE INDEX IF NOT EXISTS shopping_items_profile_idx ON public.shopping_items(profile_id, purchased, created_at DESC);
+
+-- 4. 新增 shelf_life_refs 食材保质期参考表
+CREATE TABLE IF NOT EXISTS public.shelf_life_refs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  category TEXT,
+  chill_days INT,
+  freeze_days INT,
+  produce_days INT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
+);
+CREATE UNIQUE INDEX IF NOT EXISTS shelf_life_refs_name_idx ON public.shelf_life_refs(name);
+
+-- 5. 插入常见食材保质期初始数据
+INSERT INTO public.shelf_life_refs (name, category, chill_days, freeze_days, produce_days) VALUES
+  ('鸡蛋', '蛋类', 30, NULL, NULL),
+  ('牛奶', '乳制品', 7, NULL, NULL),
+  ('鸡胸肉', '肉类', 2, 180, NULL),
+  ('猪肉', '肉类', 2, 180, NULL),
+  ('牛肉', '肉类', 3, 180, NULL),
+  ('鱼', '海鲜', 1, 90, NULL),
+  ('虾', '海鲜', 2, 120, NULL),
+  ('西红柿', '蔬菜', 7, NULL, 10),
+  ('上海青', '蔬菜', 3, NULL, 5),
+  ('黄瓜', '蔬菜', 5, NULL, 7),
+  ('胡萝卜', '蔬菜', 14, NULL, 21),
+  ('土豆', '蔬菜', 30, NULL, 30),
+  ('豆腐', '豆制品', 5, NULL, NULL),
+  ('草莓', '水果', 3, NULL, 5),
+  ('苹果', '水果', 30, NULL, 30),
+  ('香蕉', '水果', 5, NULL, 7),
+  ('酸奶', '乳制品', 14, NULL, NULL),
+  ('火腿', '加工肉', 7, 60, NULL),
+  ('白菜', '蔬菜', 7, NULL, 10),
+  ('蘑菇', '蔬菜', 3, NULL, 5)
+ON CONFLICT (name) DO NOTHING;
 ```
 
 **Step 2: 在 Supabase Dashboard 的 SQL Editor 中执行此迁移**
@@ -256,7 +294,7 @@ git commit -m "feat(auth): add WeChat mini-program login endpoint"
 
 ---
 
-### Task 4: 后端 Fridge CRUD — 补全 shelves/items/condiments
+### Task 4: 后端 Fridge CRUD — 补全 shelves/items/condiments + DELETE 端点
 
 **Files:**
 - Modify: `apps/server/src/server/routers/fridge.py`
@@ -269,6 +307,7 @@ git commit -m "feat(auth): add WeChat mini-program login endpoint"
 关键变更：
 - `list_shelves` → 调用 `gateway.list_shelves(profile.profile_id)`，将结果映射为 `ShelfResponse`
 - `save_shelves` → 调用 `gateway.upsert_shelves(profile.profile_id, [s.model_dump() for s in payload])`
+- **新增** `DELETE /fridge/shelves/{shelf_id}` — 删除层架
 - `list_items` → 调用 `gateway.list_items(profile.profile_id, shelf_id)`
 - `confirm_items` → 改路由为 `POST /items/batch`，调用 `gateway.insert_items`
 - `update_item` → 调用 `gateway.update_item`
@@ -276,8 +315,9 @@ git commit -m "feat(auth): add WeChat mini-program login endpoint"
 - 新增 `DELETE /items/{item_id}`
 - `list_condiments` → 调用 `gateway.list_condiments`
 - `upsert_condiments` → 调用 `gateway.upsert_condiments`
+- **新增** `DELETE /condiments/{condiment_id}` — 删除调料
 
-**Step 2: 在 supabase.py 追加 delete_item 方法**
+**Step 2: 在 supabase.py 追加 delete 方法**
 
 ```python
 def delete_item(self, profile_id: UUID, item_id: str) -> bool:
@@ -286,6 +326,26 @@ def delete_item(self, profile_id: UUID, item_id: str) -> bool:
         .delete()
         .eq("profile_id", str(profile_id))
         .eq("id", item_id)
+        .execute()
+    )
+    return bool(result.data)
+
+def delete_shelf(self, profile_id: UUID, shelf_id: str) -> bool:
+    result = (
+        self._client.table("shelves")
+        .delete()
+        .eq("profile_id", str(profile_id))
+        .eq("id", shelf_id)
+        .execute()
+    )
+    return bool(result.data)
+
+def delete_condiment(self, profile_id: UUID, condiment_id: str) -> bool:
+    result = (
+        self._client.table("condiments")
+        .delete()
+        .eq("profile_id", str(profile_id))
+        .eq("id", condiment_id)
         .execute()
     )
     return bool(result.data)
@@ -432,7 +492,61 @@ git commit -m "feat(vision): adapt for GLM-5V-Turbo with URL-based image input"
 
 ---
 
-### Task 7: 后端 Recipes — AI 驱动的菜谱推荐 + 扣减
+### Task 7: 后端 Shelf Life — 食材保质期参考接口
+
+**Files:**
+- Create: `apps/server/src/server/routers/shelf_life.py`
+- Modify: `apps/server/src/server/routers/__init__.py`
+- Modify: `apps/server/src/server/services/supabase.py`
+
+**Step 1: 在 supabase.py 追加查询方法**
+
+```python
+def lookup_shelf_life(self, name: str) -> Optional[Dict[str, Any]]:
+    data = (
+        self._client.table("shelf_life_refs")
+        .select("*")
+        .eq("name", name)
+        .maybe_single()
+        .execute()
+        .data
+    )
+    return data
+```
+
+**Step 2: 写 shelf_life router**
+
+```python
+from fastapi import APIRouter, Query
+from server.core.dependencies import get_supabase_gateway
+from server.services.supabase import SupabaseGateway
+
+router = APIRouter(prefix="/shelf-life", tags=["shelf-life"])
+
+
+@router.get("/")
+async def get_shelf_life(
+    name: str = Query(..., description="食材名称"),
+    gateway: SupabaseGateway = Depends(get_supabase_gateway),
+):
+    ref = gateway.lookup_shelf_life(name)
+    if not ref:
+        return {"name": name, "chill_days": None, "freeze_days": None, "produce_days": None}
+    return ref
+```
+
+**Step 3: 注册路由到 `__init__.py`**
+
+**Step 4: Commit**
+
+```bash
+git add apps/server/src/server/
+git commit -m "feat(shelf-life): add shelf life reference lookup endpoint"
+```
+
+---
+
+### Task 8: 后端 Recipes — AI 驱动的菜谱推荐 + 扣减
 
 **Files:**
 - Modify: `apps/server/src/server/routers/recipes.py`
@@ -493,7 +607,7 @@ git commit -m "feat(recipes): AI-powered recipe suggestions with GLM and invento
 
 ---
 
-### Task 8: 后端 Meals + Shopping — 新增两个模块
+### Task 9: 后端 Meals + Shopping — 新增两个模块
 
 **Files:**
 - Create: `apps/server/src/server/routers/meals.py`
@@ -603,7 +717,7 @@ git commit -m "feat: add meal_logs and shopping_items API modules"
 
 ## Phase 2: Taro 前端骨架搭建
 
-### Task 9: 初始化 Taro 项目
+### Task 10: 初始化 Taro 项目
 
 **Step 1: 全局安装 Taro CLI**
 
@@ -634,7 +748,7 @@ git commit -m "feat: initialize Taro project for mini-program"
 
 ---
 
-### Task 10: 迁移共享类型和 API 客户端
+### Task 11: 迁移共享类型和 API 客户端
 
 **Files:**
 - Copy from: `packages/shared/src/` → `apps/client-taro/src/shared/`
@@ -697,7 +811,7 @@ git commit -m "feat(taro): migrate shared types and create API client"
 
 ---
 
-### Task 11: 迁移 Zustand Store（改为 API 调用）
+### Task 12: 迁移 Zustand Store（改为 API 调用）
 
 **Files:**
 - Create: `apps/client-taro/src/stores/fridgeStore.ts`
@@ -760,81 +874,142 @@ git commit -m "feat(taro): migrate Zustand store to API-driven mode"
 
 ---
 
-### Task 12: Taro 页面 — 首页 + 拍照流程
+### Task 13: Taro 页面 — 按 UX 文档 4 Tab 12 页结构实现
 
-**Files:**
-- Create: `apps/client-taro/src/pages/index/index.tsx`
-- Create: `apps/client-taro/src/pages/camera/index.tsx`
+**Files (参考 UX 文档 §2.2 页面地图):**
 
-**Step 1: 首页 — 冰箱总览**
+```
+pages/
+├── camera/
+│   └── index              ← Tab 1: 拍照录入主页
+│
+├── fridge/
+│   ├── index              ← Tab 2: 冰箱总览（层叠卡片 + 临期提醒）
+│   ├── detail             ← 点击某层架 → 该层食材列表
+│   └── add                ← 手动添加食材表单
+│
+├── discover/
+│   ├── index              ← Tab 3: 菜谱推荐列表（含临期优先筛选）
+│   ├── recipe             ← 菜谱详情 + 开始烹饪按钮
+│   ├── shopping           ← 购物清单
+│   └── meal-log           ← 饮食记录历史
+│
+├── profile/
+│   ├── index              ← Tab 4: 个人中心
+│   ├── condiments         ← 调料管理（CRUD）
+│   └── shelves            ← 层架管理（增删改排序）
+```
 
-基于现有 `DashboardPage.tsx` 的逻辑，用 Taro 组件重写：
-- 层架卡片网格（`<View>` + flex 布局）
-- 总览统计（总数量、临期提醒）
-- 快捷拍照按钮
-- 底部 TabBar 导航
+**Step 1: 配置 TabBar（`app.config.ts`）**
 
-**Step 2: 拍照页 — 调用微信相机**
+```typescript
+tabBar: {
+  list: [
+    { pagePath: 'pages/camera/index', text: '拍照', iconPath: 'assets/tab-camera.png', selectedIconPath: 'assets/tab-camera-active.png' },
+    { pagePath: 'pages/fridge/index', text: '冰箱', iconPath: 'assets/tab-fridge.png', selectedIconPath: 'assets/tab-fridge-active.png' },
+    { pagePath: 'pages/discover/index', text: '发现', iconPath: 'assets/tab-discover.png', selectedIconPath: 'assets/tab-discover-active.png' },
+    { pagePath: 'pages/profile/index', text: '我的', iconPath: 'assets/tab-profile.png', selectedIconPath: 'assets/tab-profile-active.png' },
+  ]
+}
+```
 
+**Step 2: 配置分包（主包 ≤ 2MB）**
+
+```typescript
+subPackages: [
+  {
+    root: 'pages/discover',
+    pages: ['recipe', 'shopping', 'meal-log'],
+  },
+  {
+    root: 'pages/profile',
+    pages: ['condiments', 'shelves'],
+  },
+  {
+    root: 'pages/fridge',
+    pages: ['detail', 'add'],
+  },
+]
+```
+
+**Step 3: 实现 Tab 1 — 拍照页 (`pages/camera/index`)**
+
+按 UX 文档 §3.1 实现：
+- 上次录入摘要（可折叠）
+- 照片预览区域 / 相机取景框
+- 大按钮：拍照 / 从相册选择
+- AI 识别结果区（拍照后出现）
+- 每个候选显示：名称、数量、AI 预估保质期、层位选择器
+- 一键全部入库 / 编辑修改
+- 识别中：骨架屏动画 + "正在识别..."
+- 识别失败：降级到"手动录入"按钮
+
+拍照核心流程：
 ```typescript
 import Taro from '@tarojs/taro'
 
-// 拍照
 const takePhoto = async () => {
   const res = await Taro.chooseMedia({
-    count: 1,
-    mediaType: ['image'],
-    sourceType: ['album', 'camera'],
-    sizeType: ['compressed'],
+    count: 1, mediaType: ['image'], sourceType: ['album', 'camera'], sizeType: ['compressed'],
   })
   const tempFilePath = res.tempFiles[0].tempFilePath
-  // 上传
   const uploadRes = await Taro.uploadFile({
     url: `${BASE_URL}/photos/upload`,
     filePath: tempFilePath,
     name: 'file',
     header: { Authorization: `Bearer ${token}` },
   })
-  // 识别
   const photo = JSON.parse(uploadRes.data)
   const result = await api.recognize({ photo_id: photo.id, image_url: photo.url, shelf_id: currentShelfId })
+  // 查保质期参考
+  for (const candidate of result.candidates) {
+    const shelfLife = await api.getShelfLife(candidate.name)
+    candidate.suggestedDays = shelfLife.chillDays
+  }
   // 展示候选列表
 }
 ```
 
-**Step 3: Commit**
+**Step 4: 实现 Tab 2 — 冰箱页 (`pages/fridge/index`)**
+
+按 UX 文档 §3.2 实现：
+- 状态摘要卡片（横向滚动）：库存数、临期数、缺料数
+- 层叠冰箱可视化（CSS perspective + transform，MVP 简化版 2D 卡片 + 阴影）
+- 临期食材提醒区（最多 3 条，附推荐菜谱快捷入口 → Flow 4 临期驱动推荐）
+- 浮动 "+" 按钮（短按拍照、长按手动添加）
+- 点击层架 → `fridge/detail`
+- 空冰箱引导："拍一张照片开始吧"
+
+**Step 5: 实现 Tab 3 — 发现页 (`pages/discover/index`)**
+
+按 UX 文档 §3.3 实现：
+- "今天吃什么？" 标题 + 库存食材数
+- 筛选标签（横向滚动）：全部 / 临期优先 / 10分钟快手 / 低脂 / 暖汤 / 家常菜
+- 菜谱卡片：菜名 + 时间 + "食材齐全" 或 "缺 N 样"
+- 底部子导航：菜谱推荐 / 购物清单(N) / 饮食记录
+
+**Step 6: 实现 Tab 4 — 我的页 (`pages/profile/index`)**
+
+按 UX 文档 §3.4 实现：
+- 头像 + 昵称 + 使用天数 + 管理食材数
+- 入口列表：调料管理 / 层架管理 / 设置
+- 重置数据按钮
+
+**Step 7: 实现子页面**
+
+- `fridge/detail` — 层架食材列表，按到期日排序，到期日颜色编码（红/橙/黄/绿），左滑操作（减一/用完/移动层架）
+- `fridge/add` — 手动添加表单（名称、数量、单位、层位、到期日、保质期自动查询）
+- `discover/recipe` — 菜谱详情 + 食材用量（标注库存有/无）+ 烹饪步骤 + 开始烹饪按钮
+- `discover/shopping` — 购物清单（待买/已买分组），标记已买→提示加入库存
+- `discover/meal-log` — 饮食记录时间线，按日期分组
+- `profile/condiments` — 调料管理 CRUD，按类别分组，缺货→补货到购物清单
+- `profile/shelves` — 层架管理（拖拽排序、增删改）
+
+**Step 8: Commit**
 
 ```bash
-git add apps/client-taro/src/pages/
-git commit -m "feat(taro): add index and camera pages"
-```
-
----
-
-### Task 13: Taro 页面 — 库存、菜谱、调料、购物清单、饮食记录、设置
-
-**Files:**
-- Create: `apps/client-taro/src/pages/inventory/index.tsx`
-- Create: `apps/client-taro/src/pages/recipes/index.tsx`
-- Create: `apps/client-taro/src/pages/condiments/index.tsx`
-- Create: `apps/client-taro/src/pages/shopping/index.tsx`
-- Create: `apps/client-taro/src/pages/meals/index.tsx`
-- Create: `apps/client-taro/src/pages/settings/index.tsx`
-
-**Step 1-6: 逐页迁移**
-
-每页基于现有 React 页面的交互逻辑，用 Taro 组件重写。核心变更：
-- `<div>` → `<View>`
-- `<span>` → `<Text>`
-- `<input>` → `<Input>`
-- CSS 类名用 Taro 的样式方案
-- 路由用 `Taro.navigateTo`
-
-**Step 7: Commit**
-
-```bash
-git add apps/client-taro/src/pages/
-git commit -m "feat(taro): add all pages - inventory, recipes, condiments, shopping, meals, settings"
+git add apps/client-taro/src/
+git commit -m "feat(taro): implement all 12 pages per UX design doc"
 ```
 
 ---
@@ -898,12 +1073,13 @@ cd apps/client-taro && npm run dev:weapp
 
 - [ ] 微信登录成功
 - [ ] 拍照 → 上传 → AI 识别 → 确认入库
-- [ ] 手动添加食材
-- [ ] 查看库存（分层、临期筛选）
-- [ ] 菜谱推荐
-- [ ] 做菜扣减
-- [ ] 购物清单增删改
-- [ ] 饮食记录查看
+- [ ] 手动添加食材（含保质期自动查询）
+- [ ] 查看库存（分层、临期筛选、颜色编码）
+- [ ] 临期提醒 → 菜谱推荐联动（Flow 4）
+- [ ] 菜谱推荐（含"食材齐全"/"缺 N 样"标注）
+- [ ] 做菜扣减 + 饮食记录
+- [ ] 购物清单增删改 + 标记已买 → 加入库存
+- [ ] 调料管理（CRUD + 缺货补货）
 
 **Step 4: Commit**
 
@@ -915,11 +1091,15 @@ git commit -m "feat: end-to-end integration complete"
 
 ## Phase 4: 收尾 + 上线准备
 
-### Task 16: 错误处理 + 加载状态 + 用户体验
+### Task 16: 交互规范落地 + 用户体验打磨
 
+按 UX 文档 §4 交互规范实现：
 - 全局错误拦截（网络断开、token 过期、AI 调用失败）
+- Toast 规范（按 §4.2 的文案表实现）
 - 骨架屏 / loading 态
-- 下拉刷新
+- 下拉刷新（所有列表页）
+- 空状态引导（每个列表为空时显示引导文案 + 行动按钮）
+- 动画（层架卡片点击回弹、食材滑入滑出、AI 识别脉冲光圈）
 - 图片压缩（减少上传体积）
 
 ### Task 17: 安全加固
@@ -939,9 +1119,9 @@ git commit -m "feat: end-to-end integration complete"
 ## 执行顺序建议
 
 ```
-Phase 1 (后端): Task 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phase 1 (后端): Task 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
                 ↓
-Phase 2 (前端): Task 9 → 10 → 11 → 12 → 13
+Phase 2 (前端): Task 10 → 11 → 12 → 13
                 ↓
 Phase 3 (联调): Task 14 → 15
                 ↓
