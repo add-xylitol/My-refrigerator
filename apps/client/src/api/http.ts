@@ -1,104 +1,83 @@
-import type {
-  AnonAuthResponse,
-  ConfirmItemsRequest,
-  ConfirmItemsResponse,
-  GetShelvesResponse,
-  ItemsQuery,
-  ItemsResponse,
-  RecipeConsumeRequest,
-  RecipeConsumeResponse,
-  RecipeSuggestQuery,
-  RecipeSuggestResponse,
-  UpsertShelvesRequest,
-  UpsertShelvesResponse,
-  UpdateItemRequest,
-  UpdateItemResponse,
-  VisionRecognizeRequest,
-  VisionRecognizeResponse
-} from '@smart-fridge/shared';
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
 
-type HttpMethod = 'GET' | 'POST' | 'PATCH';
+let _token: string | null = null;
 
-type FetchOptions = {
-  method?: HttpMethod;
-  body?: unknown;
-  query?: Record<string, string | number | boolean | undefined>;
-  authToken?: string;
-};
+export function setToken(token: string) { _token = token; }
+export function getToken() { return _token; }
 
-const buildUrl = (path: string, query?: FetchOptions['query']) => {
+async function request<T>(path: string, options: RequestInit & { query?: Record<string, string> } = {}): Promise<T> {
+  const { query, ...init } = options;
   const url = new URL(path, API_BASE_URL);
-  if (query) {
-    Object.entries(query).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        url.searchParams.set(key, String(value));
-      }
-    });
+  if (query) Object.entries(query).forEach(([k, v]) => { if (v) url.searchParams.set(k, v); });
+
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (_token) headers['Authorization'] = `Bearer ${_token}`;
+
+  const res = await fetch(url.toString(), { ...init, headers: { ...headers, ...(init.headers as Record<string, string>) } });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Request failed: ${res.status}`);
   }
-  return url.toString();
+  return res.json() as T;
+}
+
+// -- Auth --
+export const authApi = {
+  localLogin: () => request<{ profileId: string; accessToken: string; expiresAt: string }>('/auth/local', { method: 'POST' }),
 };
 
-const asJson = async <T>(response: Response): Promise<T> => {
-  if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || `Request failed with status ${response.status}`);
-  }
-  return response.json() as Promise<T>;
+// -- Shelves --
+export const shelvesApi = {
+  list: () => request<any[]>('/fridge/shelves'),
+  upsert: (shelves: any[]) => request<any[]>('/fridge/shelves', { method: 'POST', body: JSON.stringify(shelves) }),
+  delete: (id: string) => request<void>(`/fridge/shelves/${id}`, { method: 'DELETE' }),
 };
 
-const request = async <T>(path: string, options: FetchOptions = {}) => {
-  const { method = 'GET', body, query, authToken } = options;
-  const response = await fetch(buildUrl(path, query), {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {})
-    },
-    body: body ? JSON.stringify(body) : undefined
-  });
-  return asJson<T>(response);
+// -- Items --
+export const itemsApi = {
+  list: (shelfId?: string) => request<any[]>('/items', { query: shelfId ? { shelf_id: shelfId } : {} }),
+  create: (item: any) => request<any>('/items', { method: 'POST', body: JSON.stringify(item) }),
+  createBatch: (items: any[], shelfId: string) => request<any[]>('/items/batch', { method: 'POST', body: JSON.stringify({ shelfId, items }) }),
+  update: (id: string, changes: any) => request<any>(`/items/${id}`, { method: 'PATCH', body: JSON.stringify(changes) }),
+  delete: (id: string) => request<void>(`/items/${id}`, { method: 'DELETE' }),
 };
 
-export const apiClient = {
-  anonLogin: () => request<AnonAuthResponse>('/auth/anon', { method: 'POST' }),
-  getShelves: (authToken?: string) => request<GetShelvesResponse>('/fridge/shelves', { authToken }),
-  upsertShelves: (payload: UpsertShelvesRequest, authToken?: string) =>
-    request<UpsertShelvesResponse>('/fridge/shelves', {
-      method: 'POST',
-      body: payload,
-      authToken
-    }),
-  getItems: (params: ItemsQuery, authToken?: string) =>
-    request<ItemsResponse>('/items', { query: params, authToken }),
-  confirmItems: (payload: ConfirmItemsRequest, authToken?: string) =>
-    request<ConfirmItemsResponse>('/items/confirm', {
-      method: 'POST',
-      body: payload,
-      authToken
-    }),
-  updateItem: (itemId: string, body: UpdateItemRequest, authToken?: string) =>
-    request<UpdateItemResponse>(`/items/${itemId}`, {
-      method: 'PATCH',
-      body,
-      authToken
-    }),
-  suggestRecipes: (query: RecipeSuggestQuery, authToken?: string) =>
-    request<RecipeSuggestResponse>('/recipes/suggest', {
-      query,
-      authToken
-    }),
-  consumeRecipe: (payload: RecipeConsumeRequest, authToken?: string) =>
-    request<RecipeConsumeResponse>('/recipes/consume', {
-      method: 'POST',
-      body: payload,
-      authToken
-    }),
-  recognizeVision: (payload: VisionRecognizeRequest, authToken?: string) =>
-    request<VisionRecognizeResponse>('/vision/recognize', {
-      method: 'POST',
-      body: payload,
-      authToken
-    })
+// -- Condiments --
+export const condimentsApi = {
+  list: () => request<any[]>('/condiments'),
+  upsert: (items: any[]) => request<any[]>('/condiments', { method: 'POST', body: JSON.stringify(items) }),
+  delete: (id: string) => request<void>(`/condiments/${id}`, { method: 'DELETE' }),
+};
+
+// -- Vision --
+export const visionApi = {
+  recognize: (imageBase64: string, shelfId: string = 'auto') =>
+    request<any>('/vision/recognize', { method: 'POST', body: JSON.stringify({ imageBase64, shelfId }) }),
+};
+
+// -- Recipes --
+export const recipesApi = {
+  suggest: (maxResults = 5, prompt?: string) =>
+    request<any[]>('/recipes/suggest', { method: 'POST', body: JSON.stringify({ maxResults, prompt }) }),
+  consume: (recipeId: string, itemsUsed: any[]) =>
+    request<any>('/recipes/consume', { method: 'POST', body: JSON.stringify({ recipeId, itemsUsed }) }),
+};
+
+// -- Meals --
+export const mealsApi = {
+  list: () => request<any[]>('/meals'),
+  create: (meal: any) => request<any>('/meals', { method: 'POST', body: JSON.stringify(meal) }),
+};
+
+// -- Shopping --
+export const shoppingApi = {
+  list: () => request<any[]>('/shopping'),
+  create: (item: any) => request<any>('/shopping', { method: 'POST', body: JSON.stringify(item) }),
+  update: (id: string, changes: any) => request<any>(`/shopping/${id}`, { method: 'PATCH', body: JSON.stringify(changes) }),
+  delete: (id: string) => request<void>(`/shopping/${id}`, { method: 'DELETE' }),
+};
+
+// -- Shelf Life --
+export const shelfLifeApi = {
+  get: (name: string) => request<any>(`/shelf-life?name=${encodeURIComponent(name)}`),
 };

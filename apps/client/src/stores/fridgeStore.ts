@@ -1,6 +1,7 @@
 import { DEFAULT_SHELVES, type QuantityUnit } from '@smart-fridge/shared';
 import { create } from 'zustand';
 import { devtools, persist, createJSONStorage, type StateStorage } from 'zustand/middleware';
+import { authApi, setToken, shelvesApi, itemsApi, condimentsApi } from '../api/http';
 
 export type Shelf = {
   id: string;
@@ -50,6 +51,12 @@ export type FridgeActions = {
   addCondiment: (input: Omit<Condiment, 'id'>) => void;
   updateCondiment: (id: string, changes: Partial<Omit<Condiment, 'id'>>) => void;
   removeCondiment: (id: string) => void;
+  /** Login to backend and sync data */
+  loginAndSync: () => Promise<void>;
+  /** Push all local data to server */
+  syncToServer: () => Promise<void>;
+  /** Pull all data from server */
+  syncFromServer: () => Promise<void>;
 };
 
 export type AddItemInput = Parameters<FridgeActions['addItem']>[0];
@@ -240,7 +247,75 @@ export const useFridgeStore = create<FridgeState & FridgeActions>()(
         removeCondiment: (id) =>
           set((state) => ({
             condiments: state.condiments.filter((condiment) => condiment.id !== id)
-          }))
+          })),
+        loginAndSync: async () => {
+          try {
+            const res = await authApi.localLogin();
+            setToken(res.accessToken);
+            // Pull data from server
+            const [serverShelves, serverItems, serverCondiments] = await Promise.all([
+              shelvesApi.list(),
+              itemsApi.list(),
+              condimentsApi.list(),
+            ]);
+            const state: Partial<FridgeState> = {};
+            if (serverShelves.length > 0) {
+              state.shelves = serverShelves.map((s: any) => ({
+                id: s.id, name: s.name, sort: s.sort, type: s.type as Shelf['type'],
+              }));
+              state.selectedShelfId = state.shelves[0]?.id ?? null;
+            }
+            if (serverItems.length > 0) {
+              state.items = serverItems.map((i: any) => ({
+                id: i.id, shelfId: i.shelfId, name: i.name, unit: i.unit as QuantityUnit,
+                qty: i.qty, expDate: i.expDate ?? null, barcode: i.barcode ?? null,
+                photoUrl: null, createdAt: i.createdAt, updatedAt: i.updatedAt,
+              }));
+            }
+            if (serverCondiments.length > 0) {
+              state.condiments = serverCondiments.map((c: any) => ({
+                id: c.id, name: c.name, category: c.category as Condiment['category'],
+                stockLevel: c.stockLevel as Condiment['stockLevel'], note: c.note,
+              }));
+            }
+            if (Object.keys(state).length > 0) set(state);
+            set({ lastSyncAt: new Date().toISOString() });
+          } catch (err) {
+            console.warn('Server sync failed, using local data:', err);
+          }
+        },
+        syncToServer: async () => {
+          // Push current shelves and items to server
+          const state = useFridgeStore.getState();
+          try {
+            await shelvesApi.upsert(state.shelves.map(s => ({
+              id: s.id, name: s.name, sort: s.sort, type: s.type,
+            })));
+          } catch (e) { console.warn('sync shelves failed:', e); }
+        },
+        syncFromServer: async () => {
+          try {
+            const [serverShelves, serverItems] = await Promise.all([
+              shelvesApi.list(),
+              itemsApi.list(),
+            ]);
+            const state: Partial<FridgeState> = {};
+            if (serverShelves.length > 0) {
+              state.shelves = serverShelves.map((s: any) => ({
+                id: s.id, name: s.name, sort: s.sort, type: s.type as Shelf['type'],
+              }));
+              state.selectedShelfId = state.shelves[0]?.id ?? null;
+            }
+            if (serverItems.length > 0) {
+              state.items = serverItems.map((i: any) => ({
+                id: i.id, shelfId: i.shelfId, name: i.name, unit: i.unit as QuantityUnit,
+                qty: i.qty, expDate: i.expDate ?? null, barcode: i.barcode ?? null,
+                photoUrl: null, createdAt: i.createdAt, updatedAt: i.updatedAt,
+              }));
+            }
+            if (Object.keys(state).length > 0) set(state);
+          } catch (e) { console.warn('sync from server failed:', e); }
+        }
       }),
       {
         name: 'smart-fridge-store',
