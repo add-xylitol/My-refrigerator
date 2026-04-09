@@ -28,3 +28,4 @@ coverage/
 __pycache__/
 *.pyc
 .venv/
+apps/client-taro/
