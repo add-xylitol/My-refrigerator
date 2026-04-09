@@ -29,3 +29,9 @@ __pycache__/
 *.pyc
 .venv/
 apps/client-taro/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+*.pem
