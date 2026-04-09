@@ -14,6 +14,7 @@ export const DiscoverPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [seed, setSeed] = useState(0);
+  const [chatInput, setChatInput] = useState('');
 
   const { items, condiments } = useFridgeStore((s) => ({
     items: s.items,
@@ -64,6 +65,21 @@ export const DiscoverPage = () => {
   }, [subTab, filter, seed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleRefresh = () => setSeed((s) => s + 1);
+
+  const handleChat = async () => {
+    if (!chatInput.trim()) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await aiService.chatRecipes({ message: chatInput, items, condiments });
+      setSuggestions(result.suggestions);
+      setChatInput('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '菜谱生成失败');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredSuggestions = useMemo(() => {
     if (filter === '临期优先') {
@@ -183,6 +199,20 @@ export const DiscoverPage = () => {
           </button>
         ))}
       </div>
+
+      {/* Chat input for asking questions */}
+      {subTab === 'recipes' && (
+        <div className="sticky bottom-24 flex gap-2 rounded-2xl border border-white/10 bg-white/10 p-3 shadow-glass backdrop-blur-xl">
+          <input type="text" placeholder="问问我今天吃什么..."
+            value={chatInput} onChange={(e) => setChatInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleChat(); }}
+            className="flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-2 text-sm text-white focus:border-accent-300 focus:outline-none" />
+          <button onClick={handleChat} disabled={loading || !chatInput.trim()}
+            className="shrink-0 rounded-xl border border-brand-300/60 bg-brand-500/50 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-500/70 disabled:opacity-50">
+            {loading ? '...' : '提问'}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
