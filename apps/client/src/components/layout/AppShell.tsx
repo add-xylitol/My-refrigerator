@@ -1,23 +1,29 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 
 type AppShellProps = {
   children: ReactNode;
+  onFABClick?: () => void;
 };
 
 const navItems = [
-  { path: '/', label: '首页', icon: '🏠' },
-  { path: '/recipes', label: '菜谱', icon: '🍳' },
-  { path: '/condiments', label: '小料', icon: '🌶️' },
-  { path: '/settings', label: '设置', icon: '⚙️' }
+  { path: '/', label: '冰箱', icon: '🧊' },
+  { path: '/discover', label: '发现', icon: '🔍' },
+  { path: '/profile', label: '我的', icon: '👤' },
 ];
 
-export const AppShell = ({ children }: AppShellProps) => {
+const fabPaths = ['/', '/discover'];
+
+export const AppShell = ({ children, onFABClick }: AppShellProps) => {
   const location = useLocation();
+  const showFAB = fabPaths.includes(location.pathname);
 
   return (
     <div className="relative flex min-h-screen flex-col text-slate-100">
+      {/* background glow */}
       <div className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[420px] bg-gradient-to-br from-brand-500/35 via-transparent to-accent-500/20 blur-3xl" />
+
+      {/* header */}
       <header className="sticky top-0 z-40 px-4 pt-3">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between rounded-3xl border border-white/5 bg-white/10 px-4 py-3 backdrop-blur-2xl shadow-glass">
           <Link to="/" className="text-base font-semibold tracking-wide text-white">
@@ -29,9 +35,24 @@ export const AppShell = ({ children }: AppShellProps) => {
           </div>
         </div>
       </header>
+
+      {/* main content */}
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 px-4 pb-28 pt-4 sm:pb-10">
         {children}
       </main>
+
+      {/* FAB - floating action button for photo */}
+      {showFAB && (
+        <button
+          onClick={onFABClick}
+          className="fixed z-50 right-6 bottom-24 flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-brand-500/80 shadow-glow backdrop-blur-xl transition-transform active:scale-95"
+          aria-label="拍照识别"
+        >
+          <span className="text-2xl">📷</span>
+        </button>
+      )}
+
+      {/* bottom navigation - 3 tabs */}
       <nav className="fixed inset-x-0 bottom-0 z-40 px-4 pb-4">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-around rounded-3xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-2xl shadow-glass">
           {navItems.map((item) => {
@@ -44,7 +65,7 @@ export const AppShell = ({ children }: AppShellProps) => {
                 key={item.path}
                 to={item.path}
                 className={[
-                  'flex flex-col items-center gap-1 rounded-xl px-3 py-1 text-xs font-medium transition-all',
+                  'flex flex-col items-center gap-1 rounded-xl px-4 py-1 text-xs font-medium transition-all',
                   isActive
                     ? 'scale-105 text-white drop-shadow-[0_5px_18px_rgba(192,38,211,0.45)]'
                     : 'text-slate-300 hover:text-accent-200'

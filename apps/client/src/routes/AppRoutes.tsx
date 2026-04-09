@@ -1,17 +1,15 @@
 import { Route, Routes } from 'react-router-dom';
-import { DashboardPage } from '../pages/DashboardPage';
-import { RecipesPage } from '../pages/RecipesPage';
-import { SettingsPage } from '../pages/SettingsPage';
-import { CondimentsPage } from '../pages/CondimentsPage';
+import { FridgePage } from '../pages/FridgePage';
+import { DiscoverPage } from '../pages/DiscoverPage';
+import { ProfilePage } from '../pages/ProfilePage';
 
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<DashboardPage />} />
-      <Route path="/recipes" element={<RecipesPage />} />
-      <Route path="/condiments" element={<CondimentsPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
-      <Route path="*" element={<DashboardPage />} />
+      <Route path="/" element={<FridgePage />} />
+      <Route path="/discover" element={<DiscoverPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="*" element={<FridgePage />} />
     </Routes>
   );
 };
