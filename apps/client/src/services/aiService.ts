@@ -1,5 +1,6 @@
 import { QUANTITY_UNITS } from '@smart-fridge/shared';
 import { nanoid } from '../utils/nanoid';
+import { visionApi } from '../api/http';
 import type { Item, Condiment } from '../stores/fridgeStore';
 
 type VisionCandidate = {
@@ -43,7 +44,7 @@ type VisionDebugInfo = {
   imageDataUrl: string;
   requestPayload: {
     model: string;
-    messages: ChatCompletionPayload['messages'];
+    messages: unknown[];
     temperature?: number;
     max_tokens?: number;
   };
@@ -65,13 +66,9 @@ const sampleQuickPrompts = ['瘦身菜谱', '暖胃汤品', '快速早餐', '无
 
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY ?? '';
 const OPENAI_API_URL =
-  import.meta.env.VITE_OPENAI_API_URL ?? 'https://api.qnaigc.com/v1/chat/completions';
-const OPENAI_VISION_MODEL =
-  import.meta.env.VITE_OPENAI_VISION_MODEL ??
-  import.meta.env.VITE_OPENAI_MODEL ??
-  'doubao-1.5-vision-pro';
+  import.meta.env.VITE_OPENAI_API_URL ?? 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
 const OPENAI_CHAT_MODEL =
-  import.meta.env.VITE_OPENAI_CHAT_MODEL ?? import.meta.env.VITE_OPENAI_MODEL ?? 'deepseek-v3';
+  import.meta.env.VITE_OPENAI_CHAT_MODEL ?? 'glm-4.7';
 const MAX_UPLOAD_SIZE_BYTES = 1.2 * 1024 * 1024; // ~1.2MB
 const allowedUnits = new Set(QUANTITY_UNITS);
 const allowedRecipeTypes = ['临期优先', '快速上桌', '冷冻解压', '定制'] as const;
@@ -258,6 +255,7 @@ export const aiService = {
 
     const dataUrl = await readFileAsDataUrl(payload.file);
 
+    // Build local debug info with the prompt (for display)
     const prompt = [
       '你是一名冰箱食材识别助手，需要根据照片返回清晰的候选清单。',
       '请只返回 JSON 对象，字段说明：',
@@ -266,78 +264,55 @@ export const aiService = {
       '识别失败或不确定时依然返回合理估计，避免出现 null。',
       `当前层位：${payload.shelfName} (id: ${payload.shelfId})。`,
       '如果图中没有食材，请返回空数组。',
-      'JSON 示例：{"note":"","items":[{"name":"鸡蛋","quantity":6,"unit":"个","confidence":0.9,"expiry":"2024-06-30","barcode":null}]}' // keep simple sample
+      'JSON 示例：{"note":"","items":[{"name":"鸡蛋","quantity":6,"unit":"个","confidence":0.9,"expiry":"2024-06-30","barcode":null}]}'
     ].join('\n');
-
-    const payloadForAI: ChatCompletionPayload = {
-      model: OPENAI_VISION_MODEL,
-      response_format: { type: 'json_object' },
-      temperature: 0.2,
-      max_tokens: 900,
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a bilingual fridge inventory vision assistant. Respond in Chinese JSON.'
-        },
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: prompt },
-            { type: 'image_url', image_url: { url: dataUrl } }
-          ]
-        }
-      ]
-    };
 
     const debugBase: VisionDebugInfo = {
       prompt,
       imageDataUrl: dataUrl,
-      requestPayload: sanitizePayload(payloadForAI),
+      requestPayload: { model: 'glm-4v-flash (server-side)', messages: [] },
       responseText: null,
       parsedJson: null
     };
 
-    let responseText: string;
     try {
-      responseText = await requestAI(payloadForAI);
+      // Call backend API instead of calling AI directly
+      const backendRes = await visionApi.recognize(dataUrl, payload.shelfId);
+
+      // Map backend candidates to frontend format
+      const candidates: VisionCandidate[] = (backendRes.candidates ?? []).map(
+        (c: any): VisionCandidate => ({
+          id: c.id || nanoid(),
+          name: c.name,
+          qty: Math.max(0.1, parseQuantity(c.qty)),
+          unit: normalizeUnit(c.unit),
+          expDate: normalizeExpiry(c.expDate ?? c.exp_date),
+          confidence: parseConfidence(c.confidence),
+          barcode: c.barcode ?? null
+        })
+      );
+
+      // Populate debug from backend response
+      const bd = backendRes.debug as any;
+      if (bd) {
+        debugBase.requestPayload = {
+          model: 'glm-4v-flash (server)',
+          messages: bd.request_payload?.messages ?? []
+        };
+        debugBase.responseText = bd.response_text ?? null;
+        debugBase.parsedJson = bd.parsed_json ?? null;
+      }
+
+      return {
+        candidates,
+        note: backendRes.note || '识别结果由 GLM-4V-Flash 提供，请核对后入库。',
+        debug: debugBase
+      };
     } catch (error) {
       const message = error instanceof Error ? error.message : 'AI 请求失败，请稍后重试。';
       debugBase.responseText = message;
       throw new VisionRecognitionError(message, debugBase);
     }
-
-    debugBase.responseText = responseText;
-
-    const parsed = safeJsonParse<VisionModelRaw>(responseText);
-    debugBase.parsedJson = parsed;
-
-    const candidates = (parsed.items ?? [])
-      .map((item): VisionCandidate | null => {
-        const name = item.name?.trim();
-        if (!name) {
-          return null;
-        }
-
-        return {
-          id: nanoid(),
-          name,
-          qty: Math.max(0.1, parseQuantity(item.quantity)),
-          unit: normalizeUnit(item.unit),
-          expDate: normalizeExpiry(item.expiry),
-          confidence: parseConfidence(item.confidence),
-          // barcode currently unused in UI but we keep for future
-          // If missing, return null
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-          barcode: item.barcode ?? null
-        };
-      })
-      .filter((candidate): candidate is VisionCandidate => candidate !== null);
-
-    return {
-      candidates,
-      note: parsed.note?.trim() || '识别结果由 doubao-1.5-vision-pro 提供，请核对后入库。',
-      debug: debugBase
-    };
   },
   async chatRecipes(payload: { message: string; items: Item[]; condiments: Condiment[] }): Promise<RecipeChatResponse> {
     const basePrompt = [
@@ -434,42 +409,6 @@ export const aiService = {
       suggestions
     };
   }
-};
-
-const sanitizePayload = (
-  payload: ChatCompletionPayload
-): VisionDebugInfo['requestPayload'] => {
-  const sanitizedMessages = (payload.messages ?? []).map((message) => {
-    if (
-      typeof message === 'object' &&
-      message !== null &&
-      'content' in message &&
-      Array.isArray((message as { content: unknown }).content)
-    ) {
-      const contentArray = (message as { content: Array<Record<string, unknown>> }).content.map(
-        (part) => {
-          if (part?.type === 'image_url') {
-            return {
-              ...part,
-              image_url: {
-                ...(part.image_url as Record<string, unknown>),
-                url: '[base64 omitted]'
-              }
-            };
-          }
-          return part;
-        }
-      );
-      return { ...message, content: contentArray };
-    }
-    return message;
-  });
-  return {
-    model: payload.model,
-    messages: sanitizedMessages,
-    temperature: payload.temperature,
-    max_tokens: payload.max_tokens
-  };
 };
 
 export type { VisionCandidate, VisionResponse, RecipeSuggestion, RecipeChatResponse, VisionDebugInfo };

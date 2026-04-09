@@ -18,5 +18,8 @@
   "engines": {
     "node": ">=16.0.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@tarojs/plugin-framework-react": "^4.1.11"
+  }
 }

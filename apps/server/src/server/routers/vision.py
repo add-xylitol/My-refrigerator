@@ -62,7 +62,7 @@ async def recognize(
   }
 
   try:
-    raw = await client.recognize(messages=messages)
+    raw = await client.recognize(messages=messages, response_format="json_object")
   except Exception as exc:  # pragma: no cover - passthrough for client errors
     debug["error"] = str(exc)
     raise HTTPException(
