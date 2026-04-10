@@ -3,20 +3,17 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 
 type AppShellProps = {
   children: ReactNode;
-  onFABClick?: () => void;
 };
 
 const navItems = [
   { path: '/', label: '冰箱', icon: '🧊' },
-  { path: '/discover', label: '发现', icon: '🔍' },
-  { path: '/profile', label: '我的', icon: '👤' },
+  { path: '/discover', label: '吃什么', icon: '🍳' },
+  { path: '/meals', label: '记录', icon: '📖' },
+  { path: '/profile', label: '我的', icon: '⚙️' },
 ];
 
-const fabPaths = ['/', '/discover'];
-
-export const AppShell = ({ children, onFABClick }: AppShellProps) => {
+export const AppShell = ({ children }: AppShellProps) => {
   const location = useLocation();
-  const showFAB = fabPaths.includes(location.pathname);
 
   return (
     <div className="relative flex min-h-screen flex-col text-slate-100">
@@ -41,20 +38,9 @@ export const AppShell = ({ children, onFABClick }: AppShellProps) => {
         {children}
       </main>
 
-      {/* FAB - floating action button for photo */}
-      {showFAB && (
-        <button
-          onClick={onFABClick}
-          className="fixed z-50 right-6 bottom-24 flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-brand-500/80 shadow-glow backdrop-blur-xl transition-transform active:scale-95"
-          aria-label="拍照识别"
-        >
-          <span className="text-2xl">📷</span>
-        </button>
-      )}
-
-      {/* bottom navigation - 3 tabs */}
+      {/* bottom navigation - 4 tabs */}
       <nav className="fixed inset-x-0 bottom-0 z-40 px-4 pb-4">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-around rounded-3xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur-2xl shadow-glass">
+        <div className="mx-auto flex w-full max-w-4xl items-center justify-around rounded-3xl border border-white/10 bg-white/10 px-2 py-3 backdrop-blur-2xl shadow-glass">
           {navItems.map((item) => {
             const isActive =
               item.path === '/'
@@ -65,7 +51,7 @@ export const AppShell = ({ children, onFABClick }: AppShellProps) => {
                 key={item.path}
                 to={item.path}
                 className={[
-                  'flex flex-col items-center gap-1 rounded-xl px-4 py-1 text-xs font-medium transition-all',
+                  'flex flex-col items-center gap-1 rounded-xl px-3 py-1 text-xs font-medium transition-all',
                   isActive
                     ? 'scale-105 text-white drop-shadow-[0_5px_18px_rgba(192,38,211,0.45)]'
                     : 'text-slate-300 hover:text-accent-200'

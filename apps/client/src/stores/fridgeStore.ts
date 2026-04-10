@@ -31,11 +31,25 @@ export type Condiment = {
   note?: string;
 };
 
+export type MealType = '早餐' | '中餐' | '晚餐' | '加餐' | '练前餐' | '练后餐';
+
+export type MealRecord = {
+  id: string;
+  type: MealType;
+  photoUrl: string | null;
+  description: string;
+  items: Array<{ name: string; qty: number; unit: string }>;
+  notes: string;
+  eatenAt: string;
+  createdAt: string;
+};
+
 type FridgeState = {
   shelves: Shelf[];
   selectedShelfId: string | null;
   items: Item[];
   condiments: Condiment[];
+  meals: MealRecord[];
   lastSyncAt: string | null;
 };
 
@@ -51,6 +65,9 @@ export type FridgeActions = {
   addCondiment: (input: Omit<Condiment, 'id'>) => void;
   updateCondiment: (id: string, changes: Partial<Omit<Condiment, 'id'>>) => void;
   removeCondiment: (id: string) => void;
+  addMeal: (input: Omit<MealRecord, 'id' | 'createdAt'>) => void;
+  removeMeal: (id: string) => void;
+  updateMeal: (id: string, changes: Partial<Omit<MealRecord, 'id' | 'createdAt'>>) => void;
   /** Login to backend and sync data */
   loginAndSync: () => Promise<void>;
   /** Push all local data to server */
@@ -167,6 +184,7 @@ export const useFridgeStore = create<FridgeState & FridgeActions>()(
         selectedShelfId: defaultShelves[0]?.id ?? null,
         items: defaultItems,
         condiments: defaultCondiments,
+        meals: [],
         lastSyncAt: null,
         setSelectedShelf: (shelfId) =>
           set({
@@ -248,11 +266,83 @@ export const useFridgeStore = create<FridgeState & FridgeActions>()(
           set((state) => ({
             condiments: state.condiments.filter((condiment) => condiment.id !== id)
           })),
+        addMeal: (input) =>
+          set((state) => ({
+            meals: [
+              {
+                id: createId('meal'),
+                type: input.type,
+                photoUrl: input.photoUrl,
+                description: input.description,
+                items: input.items,
+                notes: input.notes,
+                eatenAt: input.eatenAt,
+                createdAt: new Date().toISOString(),
+              },
+              ...state.meals,
+            ]
+          })),
+        removeMeal: (id) =>
+          set((state) => ({
+            meals: state.meals.filter((meal) => meal.id !== id)
+          })),
+        updateMeal: (id, changes) =>
+          set((state) => ({
+            meals: state.meals.map((meal) =>
+              meal.id === id ? { ...meal, ...changes } : meal
+            )
+          })),
         loginAndSync: async () => {
           try {
+            // Try to reuse saved token first
+            const savedToken = localStorage.getItem('smart-fridge-token');
+            const savedProfileId = localStorage.getItem('smart-fridge-profile-id');
+            if (savedToken && savedProfileId) {
+              setToken(savedToken);
+              // Verify token still works by fetching shelves
+              try {
+                const shelves = await shelvesApi.list();
+                // Token is valid, pull all data
+                const [serverShelves, serverItems, serverCondiments] = await Promise.all([
+                  Promise.resolve(shelves),
+                  itemsApi.list(),
+                  condimentsApi.list(),
+                ]);
+                const state: Partial<FridgeState> = {};
+                if (serverShelves.length > 0) {
+                  state.shelves = serverShelves.map((s: any) => ({
+                    id: s.id, name: s.name, sort: s.sort, type: s.type as Shelf['type'],
+                  }));
+                  state.selectedShelfId = state.shelves[0]?.id ?? null;
+                }
+                if (serverItems.length > 0) {
+                  state.items = serverItems.map((i: any) => ({
+                    id: i.id, shelfId: i.shelfId, name: i.name, unit: i.unit as QuantityUnit,
+                    qty: i.qty, expDate: i.expDate ?? null, barcode: i.barcode ?? null,
+                    photoUrl: null, createdAt: i.createdAt, updatedAt: i.updatedAt,
+                  }));
+                }
+                if (serverCondiments.length > 0) {
+                  state.condiments = serverCondiments.map((c: any) => ({
+                    id: c.id, name: c.name, category: c.category as Condiment['category'],
+                    stockLevel: c.stockLevel as Condiment['stockLevel'], note: c.note,
+                  }));
+                }
+                if (Object.keys(state).length > 0) set(state);
+                set({ lastSyncAt: new Date().toISOString() });
+                return; // Token was valid, done
+              } catch {
+                // Token expired or invalid, fall through to create new
+              }
+            }
+
+            // No saved token or token expired — create new profile
             const res = await authApi.localLogin();
             setToken(res.accessToken);
-            // Pull data from server
+            localStorage.setItem('smart-fridge-token', res.accessToken);
+            localStorage.setItem('smart-fridge-profile-id', res.profileId);
+
+            // Pull data from server (new profile = empty, but still pull)
             const [serverShelves, serverItems, serverCondiments] = await Promise.all([
               shelvesApi.list(),
               itemsApi.list(),
@@ -327,6 +417,7 @@ export const useFridgeStore = create<FridgeState & FridgeActions>()(
           selectedShelfId: state.selectedShelfId,
           items: state.items,
           condiments: state.condiments,
+          meals: state.meals,
           lastSyncAt: state.lastSyncAt
         })
       }

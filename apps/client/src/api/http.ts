@@ -66,7 +66,8 @@ export const recipesApi = {
 // -- Meals --
 export const mealsApi = {
   list: () => request<any[]>('/meals'),
-  create: (meal: any) => request<any>('/meals', { method: 'POST', body: JSON.stringify(meal) }),
+  create: (meal: { type: string; description: string; items: Array<{ name: string; qty: number; unit: string }>; photoUrl?: string | null; notes?: string; eatenAt: string }) =>
+    request<any>('/meals', { method: 'POST', body: JSON.stringify(meal) }),
 };
 
 // -- Shopping --

@@ -62,7 +62,7 @@ export const RecognitionSheet = ({
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       {/* Sheet */}
-      <div className="relative z-10 max-h-[70vh] overflow-y-auto rounded-t-3xl border-t border-white/10 bg-surface-900/98 backdrop-blur-xl shadow-glass">
+      <div className="relative z-10 max-h-[70vh] overflow-y-auto rounded-t-3xl border-t border-white/10 bg-surface-900/95 backdrop-blur-xl shadow-glass">
         {/* Drag handle */}
         <div className="flex justify-center py-3">
           <div className="h-1 w-10 rounded-full bg-white/20" />
