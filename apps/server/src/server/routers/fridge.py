@@ -133,12 +133,12 @@ async def confirm_items(
 @router.patch("/items/{item_id}", response_model=ItemResponse)
 async def update_item(
   item_id: str,
-  payload: ItemPayload,
+  payload: dict,
   profile: AuthContext = Depends(get_current_profile),
   gateway=Depends(get_supabase_gateway),
 ) -> ItemResponse:
   logger.info("Update item {} for profile={}", item_id, profile.profile_id)
-  changes = payload.model_dump(by_alias=False, exclude_none=True, exclude_unset=True)
+  changes = {k: v for k, v in payload.items() if v is not None and k not in ("id", "shelf_id")}
   # Remove fields that should not be overwritten on partial update
   changes.pop("id", None)
   changes.pop("shelf_id", None)

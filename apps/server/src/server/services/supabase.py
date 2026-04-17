@@ -274,6 +274,10 @@ class SupabaseGateway:
 
   def insert_meal_log(self, profile_id: UUID, log: Dict[str, Any]) -> Dict[str, Any]:
     payload = {**log, "profile_id": str(profile_id)}
+    # Default eaten_at to now if not provided
+    if not payload.get("eaten_at"):
+      from datetime import datetime, timezone
+      payload["eaten_at"] = datetime.now(tz=timezone.utc).isoformat()
     # Remove camelCase keys
     payload.pop("createdAt", None)
     result = self._client.table("meal_logs").insert(payload).execute()

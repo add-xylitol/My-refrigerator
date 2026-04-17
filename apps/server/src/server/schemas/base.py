@@ -7,4 +7,4 @@ def to_camel(string: str) -> str:
 
 
 class ApiSchema(BaseModel):
-  model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True, from_attributes=True)
+  model_config = ConfigDict(populate_by_name=True, from_attributes=True)

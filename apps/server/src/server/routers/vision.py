@@ -34,8 +34,10 @@ async def recognize(
     ]
   )
 
-  # Prefer image_url, fallback to image_base64
-  image_source = payload.image_url or payload.image_base64
+  # Build image source: prefer explicit URL, then construct data URL from base64
+  image_source = payload.image_url
+  if not image_source and payload.image_base64:
+    image_source = f"data:image/jpeg;base64,{payload.image_base64}"
   if not image_source:
     raise HTTPException(
       status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

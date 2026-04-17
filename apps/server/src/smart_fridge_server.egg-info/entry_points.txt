@@ -1,0 +1,2 @@
+[console_scripts]
+smart-fridge-server = server.main:run
