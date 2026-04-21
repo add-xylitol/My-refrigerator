@@ -112,7 +112,7 @@
   flex-direction: column;
 }
 
-.priority-row > * + * {
+.priority-row view + view {
   margin-top: 16px;
 }
 
@@ -183,8 +183,8 @@
   flex-direction: column;
 }
 
-.chamber-list > * + *,
-.alert-list > * + * {
+.chamber-list view + view,
+.alert-list view + view {
   margin-top: 16px;
 }
 
@@ -235,7 +235,7 @@
   flex-shrink: 0;
 }
 
-.chamber-side > * + * {
+.chamber-side view + view {
   margin-top: 10px;
 }
 

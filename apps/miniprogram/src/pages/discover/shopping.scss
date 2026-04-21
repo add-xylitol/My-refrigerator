@@ -49,7 +49,7 @@
   padding: 16px 24px 0;
 }
 
-.shop-content > * + * {
+.shop-content view + view {
   margin-top: 24px;
 }
 
@@ -79,7 +79,7 @@
   opacity: 0.45;
 }
 
-.shop-list > * + * {
+.shop-list view + view {
   margin-top: 12px;
 }
 
@@ -183,7 +183,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: $radius-xl;
   box-shadow: $shadow-glow;
-  backdrop-filter: blur(24px);
+
 }
 
 .shop-add-btn {

@@ -18,12 +18,9 @@ textarea,
 scroll-view,
 swiper,
 swiper-item,
-image,
-image::before,
-image::after {
+image {
   box-sizing: border-box;
 }
-
 
 .container {
   padding: 32px 24px 160px;
@@ -36,13 +33,15 @@ image::after {
   border: 1px solid $glass-border;
   border-radius: $radius-lg;
   box-shadow: $shadow-soft;
-  backdrop-filter: blur(22px);
 }
 
 .glass-card::before {
   content: '';
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
   pointer-events: none;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, transparent 36%, rgba(129, 140, 248, 0.08) 100%);
 }
@@ -55,7 +54,7 @@ image::after {
   margin-top: 0;
 }
 
-.section-stack > * + * {
+.section-stack view + view {
   margin-top: 24px;
 }
 
@@ -77,11 +76,10 @@ image::after {
   bottom: calc(24px + env(safe-area-inset-bottom));
   z-index: 100;
   padding: 14px;
-  background: rgba(8, 13, 24, 0.86);
+  background: rgba(8, 13, 24, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: $radius-xl;
   box-shadow: $shadow-glow;
-  backdrop-filter: blur(24px);
 }
 
 .bottom-action-button {

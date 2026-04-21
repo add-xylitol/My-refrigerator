@@ -13,7 +13,7 @@
   padding: 32px 24px calc(204px + env(safe-area-inset-bottom, 0));
 }
 
-.profile-content > * + * {
+.profile-content view + view {
   margin-top: 24px;
 }
 

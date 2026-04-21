@@ -13,7 +13,7 @@
   padding: 32px 24px calc(204px + env(safe-area-inset-bottom, 0));
 }
 
-.meals-content > * + * {
+.meals-content view + view {
   margin-top: 24px;
 }
 
@@ -99,11 +99,11 @@
   flex-direction: column;
 }
 
-.timeline-stack > * + * {
+.timeline-stack view + view {
   margin-top: 24px;
 }
 
-.timeline-group-list > * + * {
+.timeline-group-list view + view {
   margin-top: 18px;
 }
 

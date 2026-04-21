@@ -45,7 +45,7 @@
   padding: 16px 24px 0;
 }
 
-.camera-content > * + * {
+.camera-content view + view {
   margin-top: 20px;
 }
 
@@ -201,7 +201,7 @@
   flex-direction: column;
 }
 
-.candidate-list > * + * {
+.candidate-list view + view {
   margin-top: 16px;
 }
 
@@ -364,7 +364,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: $radius-xl;
   box-shadow: $shadow-glow;
-  backdrop-filter: blur(24px);
+
   display: flex;
   gap: 12px;
 }

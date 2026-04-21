@@ -45,7 +45,7 @@
   padding: 16px 24px 0;
 }
 
-.recipe-content > * + * {
+.recipe-content view + view {
   margin-top: 20px;
 }
 
@@ -259,7 +259,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: $radius-xl;
   box-shadow: $shadow-glow;
-  backdrop-filter: blur(24px);
+
 }
 
 .cook-btn {
