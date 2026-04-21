@@ -1,0 +1,257 @@
+@import '../../styles/variables.scss';
+
+.condiments-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #EEF2FF 0%, $bg-gradient-end 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Top bar ---- */
+.cond-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 12px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  .back-btn {
+    font-size: 32px;
+    color: $brand-color;
+    font-weight: 600;
+    padding: 8px;
+    cursor: pointer;
+  }
+
+  .topbar-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: $text-primary;
+  }
+
+  .topbar-add {
+    font-size: 26px;
+    color: $brand-color;
+    font-weight: 600;
+    padding: 8px;
+    cursor: pointer;
+  }
+}
+
+/* ---- Add Form ---- */
+.add-form {
+  padding: 20px 32px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.add-form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.add-input {
+  flex: 1;
+  height: 72px;
+  padding: 0 20px;
+  border-radius: $border-radius-sm;
+  border: 2px solid #E2E8F0;
+  font-size: 26px;
+  color: $text-primary;
+  background: #F8FAFC;
+}
+
+.category-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cat-option {
+  padding: 10px 20px;
+  border-radius: $border-radius-full;
+  background: #F1F5F9;
+  transition: all 0.2s;
+
+  .cat-text {
+    font-size: 22px;
+    color: $text-secondary;
+  }
+
+  &.cat-active {
+    background: rgba($brand-color, 0.12);
+
+    .cat-text {
+      color: $brand-color;
+      font-weight: 600;
+    }
+  }
+}
+
+.add-form-actions {
+  display: flex;
+}
+
+.add-confirm {
+  flex: 1;
+  padding: 18px 0;
+  border-radius: $border-radius-sm;
+  background: linear-gradient(135deg, $brand-color, $brand-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba($brand-color, 0.25);
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  .add-confirm-text {
+    font-size: 26px;
+    color: #FFFFFF;
+    font-weight: 600;
+  }
+}
+
+/* ---- Filter ---- */
+.filter-scroll {
+  white-space: nowrap;
+  padding: 12px 0;
+}
+
+.filter-row {
+  display: inline-flex;
+  gap: 12px;
+  padding: 0 32px;
+}
+
+.filter-chip {
+  padding: 8px 24px;
+  border-radius: $border-radius-full;
+  background: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+
+  .filter-chip-text {
+    font-size: 22px;
+    color: $text-secondary;
+  }
+
+  &.chip-active {
+    background: $brand-color;
+    .filter-chip-text {
+      color: #FFFFFF;
+      font-weight: 600;
+    }
+  }
+}
+
+/* ---- Scroll ---- */
+.cond-scroll {
+  flex: 1;
+  height: 0;
+}
+
+/* ---- Groups ---- */
+.cond-group {
+  padding: 0 32px;
+}
+
+.cond-group-label {
+  font-size: 24px;
+  font-weight: 600;
+  color: $text-muted;
+  display: block;
+  padding: 20px 0 10px;
+}
+
+/* ---- Card ---- */
+.cond-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: $card-bg;
+  border-radius: $border-radius-sm;
+  padding: 18px 24px;
+  margin-bottom: 10px;
+  box-shadow: $shadow;
+  transition: transform 0.2s;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.cond-dot-wrap {
+  padding: 4px;
+  cursor: pointer;
+}
+
+.cond-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.dot-green { background: $success-color; }
+  &.dot-red { background: $danger-color; }
+  &.dot-yellow { background: $warning-color; }
+}
+
+.cond-name {
+  flex: 1;
+  font-size: 28px;
+  font-weight: 500;
+  color: $text-primary;
+}
+
+.cond-level {
+  font-size: 22px;
+  color: $text-muted;
+  flex-shrink: 0;
+}
+
+.cond-restock {
+  padding: 8px 18px;
+  border-radius: $border-radius-full;
+  background: rgba($danger-color, 0.08);
+  flex-shrink: 0;
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  .restock-text {
+    font-size: 20px;
+    color: $danger-color;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+}
+
+/* ---- Empty ---- */
+.cond-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 32px;
+
+  .cond-empty-icon {
+    font-size: 72px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+
+  .cond-empty-text {
+    font-size: 30px;
+    color: $text-secondary;
+  }
+
+  .cond-empty-hint {
+    font-size: 24px;
+    color: $text-muted;
+    margin-top: 8px;
+  }
+}
