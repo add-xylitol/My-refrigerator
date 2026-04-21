@@ -1,0 +1,41 @@
+// Neo Glass core palette
+$bg-base: #070b14;
+$bg-surface: rgba(15, 23, 42, 0.78);
+$bg-surface-strong: rgba(15, 23, 42, 0.92);
+$glass-border: rgba(255, 255, 255, 0.12);
+$glass-highlight: rgba(129, 140, 248, 0.18);
+$brand-color: #7c8cff;
+$brand-light: #a5b4ff;
+$text-primary: #f8fafc;
+$text-secondary: rgba(226, 232, 240, 0.72);
+$text-muted: rgba(148, 163, 184, 0.62);
+$danger-color: #ff6b6b;
+$warning-color: #ffb347;
+$success-color: #3dd9b3;
+$radius-xl: 32px;
+$radius-lg: 24px;
+$radius-md: 18px;
+$radius-pill: 9999px;
+$space-1: 8px;
+$space-2: 12px;
+$space-3: 16px;
+$space-4: 24px;
+$space-5: 32px;
+$space-6: 40px;
+$shadow-soft: 0 20px 50px rgba(0, 0, 0, 0.28);
+$shadow-glow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 16px 40px rgba(124, 140, 255, 0.18);
+
+// Supporting aliases for the current codebase
+$accent-color: #7fd8ff;
+$bg-card: $bg-surface;
+$bg-elevated: $bg-surface-strong;
+$card-bg: $bg-surface;
+$border-color: $glass-border;
+$border-subtle: rgba(255, 255, 255, 0.08);
+$border-radius: $radius-lg;
+$border-radius-sm: $radius-md;
+$border-radius-full: $radius-pill;
+$shadow: $shadow-soft;
+$bg-gradient-start: #050811;
+$bg-gradient-end: #0e1728;
+$page-gradient: linear-gradient(180deg, #050811 0%, #0a1020 46%, #0e1728 100%);

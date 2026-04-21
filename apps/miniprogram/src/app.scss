@@ -1,0 +1,110 @@
+@import './styles/variables.scss';
+
+page {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(124, 140, 255, 0.22), transparent 34%),
+    linear-gradient(180deg, #050811 0%, #0a1020 46%, #0e1728 100%);
+  color: $text-primary;
+  font-size: 28px;
+  min-height: 100vh;
+}
+
+view,
+text,
+button,
+input,
+textarea,
+scroll-view,
+swiper,
+swiper-item,
+image,
+image::before,
+image::after {
+  box-sizing: border-box;
+}
+
+
+.container {
+  padding: 32px 24px 160px;
+}
+
+.glass-card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.82) 0%, rgba(15, 23, 42, 0.72) 100%);
+  border: 1px solid $glass-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-soft;
+  backdrop-filter: blur(22px);
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, transparent 36%, rgba(129, 140, 248, 0.08) 100%);
+}
+
+.section-block {
+  margin-top: 24px;
+}
+
+.section-block:first-child {
+  margin-top: 0;
+}
+
+.section-stack > * + * {
+  margin-top: 24px;
+}
+
+.section-label {
+  margin-bottom: 16px;
+  color: $text-secondary;
+  font-size: 24px;
+  line-height: 1.4;
+}
+
+.with-bottom-action-bar {
+  padding-bottom: calc(176px + env(safe-area-inset-bottom));
+}
+
+.bottom-action-bar {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  z-index: 100;
+  padding: 14px;
+  background: rgba(8, 13, 24, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: $radius-xl;
+  box-shadow: $shadow-glow;
+  backdrop-filter: blur(24px);
+}
+
+.bottom-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 92px;
+  padding: 0 24px;
+  background: linear-gradient(135deg, $brand-light 0%, $brand-color 100%);
+  border: none;
+  border-radius: $radius-pill;
+  box-shadow: 0 16px 36px rgba(124, 140, 255, 0.28);
+  line-height: 1;
+}
+
+.bottom-action-button::after {
+  border: none;
+}
+
+.bottom-action-text {
+  color: #050811;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
