@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { View, Text, Input, ScrollView } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
-import { getFoodEmoji } from '@smart-fridge/shared'
 import { useFridgeStore } from '../../stores/fridgeStore'
 import type { ItemResponse } from '../../services/api'
 import './detail.scss'
@@ -37,7 +36,6 @@ function formatDateCN(dateStr: string | null | undefined): string {
   return `${d.getMonth() + 1}/${d.getDate()}`
 }
 
-
 export default function ShelfDetailPage() {
   const router = useRouter()
   const shelfId = (router.params.shelfId as string) || ''
@@ -66,7 +64,6 @@ export default function ShelfDetailPage() {
       const q = searchQuery.trim().toLowerCase()
       filtered = filtered.filter((i) => i.name.toLowerCase().includes(q))
     }
-    // Sort by expiry: nearest first, no-date last
     return filtered.sort((a, b) => {
       const da = daysUntil(a.exp_date)
       const db = daysUntil(b.exp_date)
@@ -113,18 +110,13 @@ export default function ShelfDetailPage() {
 
   return (
     <View className='detail-page'>
-      {/* Header */}
       <View className='detail-header'>
-        <Text className='back-btn' onClick={handleGoBack}>
-          ←
-        </Text>
+        <Text className='back-btn' onClick={handleGoBack}>←</Text>
         <Text className='detail-title'>{shelf?.name || '层架详情'}</Text>
         <Text className='edit-shelf-btn'>编辑层架</Text>
       </View>
 
-      {/* Search Bar */}
       <View className='search-bar'>
-        <Text className='search-icon'>🔍</Text>
         <Input
           className='search-input'
           placeholder='搜索食材...'
@@ -133,17 +125,14 @@ export default function ShelfDetailPage() {
           onInput={(e) => setSearchQuery(e.detail.value)}
         />
         {searchQuery && (
-          <Text className='search-clear' onClick={() => setSearchQuery('')}>
-            ✕
-          </Text>
+          <Text className='search-clear' onClick={() => setSearchQuery('')}>✕</Text>
         )}
       </View>
 
       <ScrollView scrollY className='detail-scroll'>
         {sortedItems.length === 0 && !loading && (
-          <View className='empty-state'>
-            <Text className='empty-icon'>📭</Text>
-            <Text className='empty-text'>这层还是空的</Text>
+          <View className='empty-state glass-card'>
+            <Text className='empty-title'>这层还是空的</Text>
             <View className='empty-btn' onClick={handleTakePhoto}>
               <Text className='empty-btn-text'>去拍照</Text>
             </View>
@@ -154,9 +143,8 @@ export default function ShelfDetailPage() {
           const d = daysUntil(item.exp_date)
           const colorCls = expiryColorClass(d)
           return (
-            <View key={item.id} className={`item-card ${colorCls}`}>
+            <View key={item.id} className={`item-card glass-card ${colorCls}`}>
               <View className='item-main'>
-                <Text className='item-emoji'>{getFoodEmoji(item.name)}</Text>
                 <View className='item-info'>
                   <Text className='item-name'>{item.name}</Text>
                   <Text className='item-qty'>
@@ -173,7 +161,6 @@ export default function ShelfDetailPage() {
                 </View>
               </View>
 
-              {/* Action buttons (simplified swipe actions for H5) */}
               <View className='item-actions'>
                 <Text
                   className='action-btn action-decrease'
@@ -198,7 +185,6 @@ export default function ShelfDetailPage() {
           )
         })}
 
-        {/* Bottom Spacer */}
         <View style={{ height: '40px' }} />
       </ScrollView>
     </View>

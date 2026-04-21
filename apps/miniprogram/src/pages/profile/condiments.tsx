@@ -35,7 +35,6 @@ export default function CondimentsPage() {
     return condiments.filter((c) => c.stock_level === activeFilter)
   }, [condiments, activeFilter])
 
-  // Group by category
   const grouped = useMemo(() => {
     const map = new Map<CondimentCategory, CondimentResponse[]>()
     for (const c of filtered) {
@@ -64,7 +63,7 @@ export default function CondimentsPage() {
     const res = await Taro.showModal({
       title: '删除调料',
       content: `确定删除「${c.name}」吗？`,
-      confirmColor: '#EF4444',
+      confirmColor: '#ff6b6b',
     })
     if (res.confirm) {
       await deleteCondiment(c.id)
@@ -74,7 +73,7 @@ export default function CondimentsPage() {
   const handleLongPress = (c: CondimentResponse) => {
     Taro.showActionSheet({
       itemList: ['删除'],
-      itemColor: '#EF4444',
+      itemColor: '#ff6b6b',
     }).then(async (res) => {
       if (res.tapIndex === 0) {
         await handleDelete(c)
@@ -109,22 +108,21 @@ export default function CondimentsPage() {
 
   return (
     <View className='condiments-page'>
-      {/* Top bar */}
       <View className='cond-topbar'>
-        <Text className='back-btn' onClick={() => Taro.navigateBack()}>‹ 返回</Text>
-        <Text className='topbar-title'>调料管理</Text>
-        <Text className='topbar-add' onClick={() => setShowAdd(!showAdd)}>
+        <Text className='cond-back' onClick={() => Taro.navigateBack()}>‹ 返回</Text>
+        <Text className='cond-topbar-title'>调料管理</Text>
+        <Text className='cond-topbar-add' onClick={() => setShowAdd(!showAdd)}>
           {showAdd ? '取消' : '+ 添加'}
         </Text>
       </View>
 
-      {/* Add form */}
       {showAdd && (
-        <View className='add-form'>
-          <View className='add-form-row'>
+        <View className='cond-add-form glass-card'>
+          <View className='cond-add-row'>
             <Input
-              className='add-input'
+              className='cond-add-input'
               placeholder='调料名称'
+              placeholderStyle='color: rgba(148, 163, 184, 0.62)'
               value={newName}
               onInput={(e) => setNewName(e.detail.value)}
             />
@@ -140,15 +138,14 @@ export default function CondimentsPage() {
               </View>
             ))}
           </View>
-          <View className='add-form-actions'>
-            <View className='add-confirm' onClick={handleAdd}>
-              <Text className='add-confirm-text'>确认添加</Text>
+          <View className='cond-add-actions'>
+            <View className='cond-add-confirm' onClick={handleAdd}>
+              <Text className='cond-add-confirm-text'>确认添加</Text>
             </View>
           </View>
         </View>
       )}
 
-      {/* Filters */}
       <ScrollView scrollX className='filter-scroll' enhanced showScrollbar={false}>
         <View className='filter-row'>
           {FILTERS.map((f) => (
@@ -165,9 +162,8 @@ export default function CondimentsPage() {
 
       <ScrollView scrollY className='cond-scroll'>
         {grouped.length === 0 ? (
-          <View className='cond-empty'>
-            <Text className='cond-empty-icon'>🧂</Text>
-            <Text className='cond-empty-text'>暂无调料</Text>
+          <View className='cond-empty glass-card'>
+            <Text className='cond-empty-title'>暂无调料</Text>
             <Text className='cond-empty-hint'>点击右上角添加</Text>
           </View>
         ) : (
@@ -177,7 +173,7 @@ export default function CondimentsPage() {
               {items.map((c) => (
                 <View
                   key={c.id}
-                  className='cond-card'
+                  className='cond-card glass-card'
                   onLongPress={() => handleLongPress(c)}
                 >
                   <View
@@ -192,7 +188,7 @@ export default function CondimentsPage() {
                       className='cond-restock'
                       onClick={() => handleRestock(c)}
                     >
-                      <Text className='restock-text'>补货→购物清单</Text>
+                      <Text className='restock-text'>补货</Text>
                     </View>
                   ) : (
                     <Text className='cond-level'>{c.stock_level}</Text>

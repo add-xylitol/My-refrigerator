@@ -146,8 +146,10 @@
 .picker-shelf {
   gap: 12px;
 
-  .shelf-type-icon {
-    font-size: 26px;
+  .shelf-type-label {
+    font-size: 22px;
+    font-weight: 600;
+    color: $brand-light;
   }
 }
 

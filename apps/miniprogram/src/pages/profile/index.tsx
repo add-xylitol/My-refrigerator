@@ -51,7 +51,7 @@ export default function ProfilePage() {
       title: '重置所有数据',
       content: '此操作将清空所有食材、调料、购物清单和饮食记录，无法恢复。确定继续？',
       confirmText: '确定重置',
-      confirmColor: '#EF4444',
+      confirmColor: '#ff6b6b',
     })
     if (!res.confirm) return
 
@@ -77,7 +77,7 @@ export default function ProfilePage() {
         <View className='profile-content'>
           <View className='profile-hero glass-card'>
             <View className='profile-avatar'>
-              <Text className='profile-emoji'>{viewModel.emoji}</Text>
+              <Text className='profile-avatar-text'>{viewModel.icon}</Text>
             </View>
             <Text className='profile-nickname'>{viewModel.nickname}</Text>
             <Text className='profile-stats'>{viewModel.manageLabel}</Text>
@@ -91,7 +91,7 @@ export default function ProfilePage() {
                 onClick={() => void handleNavigate(item.path)}
               >
                 <View className='control-icon'>
-                  <Text className='control-emoji'>{item.emoji}</Text>
+                  <Text className='control-icon-text'>{item.icon}</Text>
                 </View>
                 <View className='control-copy'>
                   <Text className='control-title'>{item.title}</Text>
@@ -104,7 +104,6 @@ export default function ProfilePage() {
 
           <View className='danger-zone'>
             <View className='reset-btn glass-card' onClick={() => void handleReset()}>
-              <Text className='reset-icon'>🧹</Text>
               <Text className='reset-text'>重置所有数据</Text>
             </View>
           </View>

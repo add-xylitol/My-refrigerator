@@ -223,12 +223,12 @@ export default function AddItemPage() {
               onChange={(e) => setShelfIdx(Number(e.detail.value))}
             >
               <View className='picker-value picker-shelf'>
-                <Text className='shelf-type-icon'>
+                <Text className='shelf-type-label'>
                   {selectedShelf?.type === 'freeze'
-                    ? '❄️'
+                    ? '冷冻'
                     : selectedShelf?.type === 'produce'
-                    ? '🥬'
-                    : '🧊'}
+                    ? '蔬果'
+                    : '冷藏'}
                 </Text>
                 <Text>{shelfNames[shelfIdx] || '选择层架'}</Text>
                 <Text className='picker-arrow'>▼</Text>

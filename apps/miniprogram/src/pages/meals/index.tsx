@@ -21,7 +21,7 @@ export default function MealsPage() {
       editable: true,
       placeholderText: '吃了什么？（如：番茄鸡蛋面）',
       confirmText: '记录',
-      confirmColor: '#7C8CFF',
+      confirmColor: '#7c8cff',
     })
 
     if (res.confirm && res.content?.trim()) {
@@ -47,7 +47,7 @@ export default function MealsPage() {
         editable: true,
         placeholderText: '吃了什么？',
         confirmText: '记录',
-        confirmColor: '#7C8CFF',
+        confirmColor: '#7c8cff',
       })
 
       if (modalRes.confirm) {

@@ -26,7 +26,7 @@ type ShoppingItem = {
 }
 
 type ControlItem = {
-  emoji: string
+  icon: string
   title: string
   subtitle: string
   path: string
@@ -35,7 +35,7 @@ type ControlItem = {
 export type ProfileViewModel = {
   title: string
   nickname: string
-  emoji: string
+  icon: string
   usageDays: number
   totalItems: number
   manageLabel: string
@@ -53,11 +53,11 @@ const calculateUsageDays = (items: Item[], now: Date): number => {
 }
 
 const buildControlItem = (
-  emoji: string,
+  icon: string,
   title: string,
   path: string,
   subtitle: string
-): ControlItem => ({ emoji, title, path, subtitle })
+): ControlItem => ({ icon, title, path, subtitle })
 
 export const buildProfileViewModel = ({
   items,
@@ -85,31 +85,31 @@ export const buildProfileViewModel = ({
 
   const controlItems: ControlItem[] = [
     buildControlItem(
-      '🧂',
+      '调',
       '调料管理',
       '/pages/profile/condiments',
       `当前 ${condiments.length} 样 · 缺货 ${outOfStockCondiments} 样`
     ),
     buildControlItem(
-      '🗂',
+      '层',
       '层架管理',
       '/pages/profile/shelves',
       `${shelves.length} 个层架`
     ),
     buildControlItem(
-      '🛒',
+      '购',
       '购物清单',
       '/pages/discover/shopping',
       pendingShoppingCount > 0 ? `${pendingShoppingCount} 项待买` : '暂无待买'
     ),
     buildControlItem(
-      '⚙️',
+      '关',
       '关于',
       'about',
       '版本信息和更新'
     ),
     buildControlItem(
-      '💬',
+      '馈',
       '意见反馈',
       'feedback',
       '帮我们做得更好'
@@ -119,7 +119,7 @@ export const buildProfileViewModel = ({
   return {
     title: '控制中心',
     nickname: '小冰',
-    emoji: '🧊',
+    icon: '冰',
     usageDays,
     totalItems,
     manageLabel,
