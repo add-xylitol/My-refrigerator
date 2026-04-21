@@ -1,0 +1,240 @@
+@import '../../styles/variables.scss';
+
+.detail-page {
+  min-height: 100vh;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Header ---- */
+.detail-header {
+  display: flex;
+  align-items: center;
+  padding: 32px 28px;
+  gap: 16px;
+
+  .back-btn {
+    font-size: 32px;
+    font-weight: 300;
+    color: $brand-light;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(165, 180, 255, 0.1);
+    border: 1px solid rgba(165, 180, 255, 0.15);
+    border-radius: 50%;
+    transition: background 0.2s;
+  }
+
+  .detail-title {
+    flex: 1;
+    font-size: 32px;
+    font-weight: 700;
+    color: $text-primary;
+  }
+
+  .edit-shelf-btn {
+    font-size: 22px;
+    color: $brand-light;
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: $radius-pill;
+    background: rgba(165, 180, 255, 0.1);
+    border: 1px solid rgba(165, 180, 255, 0.15);
+  }
+}
+
+/* ---- Search Bar ---- */
+.search-bar {
+  display: flex;
+  align-items: center;
+  margin: 0 24px 20px;
+  padding: 12px 20px;
+  border-radius: $radius-pill;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.search-icon {
+  font-size: 24px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 26px;
+  color: $text-primary;
+  height: 48px;
+  background: transparent;
+}
+
+.search-placeholder {
+  color: $text-muted;
+  font-size: 26px;
+}
+
+.search-clear {
+  font-size: 20px;
+  color: $text-muted;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ---- Scroll ---- */
+.detail-scroll {
+  flex: 1;
+  height: 0;
+  padding: 0 24px;
+}
+
+/* ---- Empty State ---- */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 24px;
+
+  .empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+
+  .empty-text {
+    font-size: 28px;
+    color: $text-secondary;
+    margin-bottom: 24px;
+  }
+
+  .empty-btn {
+    padding: 16px 40px;
+    background: rgba(165, 180, 255, 0.15);
+    border: 1px solid rgba(165, 180, 255, 0.2);
+    border-radius: $radius-pill;
+  }
+
+  .empty-btn-text {
+    font-size: 26px;
+    font-weight: 600;
+    color: $brand-light;
+  }
+}
+
+/* ---- Item Card ---- */
+.item-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: $radius-md;
+  margin-bottom: 16px;
+  overflow: hidden;
+
+  &.exp-red {
+    border-left: 4px solid #EF4444;
+  }
+  &.exp-orange {
+    border-left: 4px solid #F59E0B;
+  }
+  &.exp-yellow {
+    border-left: 4px solid #EAB308;
+  }
+  &.exp-green {
+    border-left: 4px solid #22C55E;
+  }
+}
+
+.item-main {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  gap: 14px;
+}
+
+.item-emoji {
+  font-size: 36px;
+  flex-shrink: 0;
+}
+
+.item-info {
+  flex: 1;
+
+  .item-name {
+    font-size: 28px;
+    font-weight: 600;
+    color: $text-primary;
+    display: block;
+  }
+
+  .item-qty {
+    font-size: 22px;
+    color: $text-secondary;
+    margin-top: 4px;
+    display: block;
+  }
+}
+
+.item-expiry-wrap {
+  text-align: right;
+  flex-shrink: 0;
+
+  .item-expiry {
+    font-size: 26px;
+    font-weight: 700;
+    display: block;
+
+    &.exp-red { color: #EF4444; }
+    &.exp-orange { color: #F59E0B; }
+    &.exp-yellow { color: #CA8A04; }
+    &.exp-green { color: #22C55E; }
+  }
+
+  .expiry-label {
+    font-size: 18px;
+    display: block;
+    margin-top: 2px;
+
+    &.exp-red { color: #EF4444; }
+    &.exp-orange { color: #B45309; }
+    &.exp-yellow { color: #A16207; }
+    &.exp-green { color: #047857; }
+  }
+}
+
+/* ---- Item Actions ---- */
+.item-actions {
+  display: flex;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.action-btn {
+  flex: 1;
+  text-align: center;
+  padding: 14px 0;
+  font-size: 22px;
+  font-weight: 500;
+
+  & + .action-btn {
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  &.action-decrease {
+    color: #F59E0B;
+  }
+
+  &.action-useup {
+    color: #EF4444;
+  }
+
+  &.action-edit {
+    color: $brand-light;
+  }
+}

@@ -1,0 +1,389 @@
+@import '../../styles/variables.scss';
+
+.fridge-page {
+  min-height: 100vh;
+  background: transparent;
+}
+
+.fridge-scroll {
+  height: 100vh;
+}
+
+.fridge-content {
+  padding: 32px 24px 0;
+}
+
+.hero-panel {
+  padding: 32px;
+}
+
+.hero-eyebrow {
+  display: block;
+  color: $text-secondary;
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  display: block;
+  margin-top: 16px;
+  color: $text-primary;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.18;
+}
+
+.hero-subtitle {
+  display: block;
+  margin-top: 12px;
+  color: $brand-light;
+  font-size: 28px;
+  line-height: 1.5;
+}
+
+.hero-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.hero-meta-item,
+.hero-meta-dot {
+  margin-right: 8px;
+}
+
+.hero-meta-dot:last-child,
+.hero-meta-item:last-child {
+  margin-right: 0;
+}
+
+.hero-meta-item,
+.hero-meta-dot {
+  color: $text-muted;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.metrics-row {
+  display: flex;
+  margin-top: 28px;
+  margin-left: -6px;
+  margin-right: -6px;
+}
+
+.metric-tile {
+  flex: 1;
+  margin: 0 6px;
+  padding: 24px 20px;
+  min-height: 176px;
+  border-radius: $radius-md;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.metric-value {
+  display: block;
+  color: $text-primary;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.metric-label {
+  display: block;
+  margin-top: 16px;
+  color: $text-secondary;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.metric-note {
+  display: block;
+  margin-top: 8px;
+  color: $text-muted;
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+.priority-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.priority-row > * + * {
+  margin-top: 16px;
+}
+
+.priority-card {
+  padding: 28px;
+}
+
+.priority-card-secondary {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.72) 0%, rgba(15, 23, 42, 0.62) 100%);
+}
+
+.priority-label {
+  display: block;
+  color: $text-secondary;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.priority-title {
+  display: block;
+  margin-top: 10px;
+  color: $text-primary;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.priority-description {
+  display: block;
+  margin-top: 12px;
+  color: $text-secondary;
+  font-size: 24px;
+  line-height: 1.6;
+}
+
+.priority-cta {
+  display: inline-block;
+  margin-top: 18px;
+  color: $brand-light;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.section-head {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  display: block;
+  color: $text-primary;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.section-subtitle {
+  display: block;
+  margin-top: 6px;
+  color: $text-muted;
+  font-size: 22px;
+  line-height: 1.5;
+}
+
+.chamber-list,
+.alert-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.chamber-list > * + *,
+.alert-list > * + * {
+  margin-top: 16px;
+}
+
+.chamber-card {
+  padding: 28px;
+}
+
+.chamber-head {
+  display: flex;
+  justify-content: space-between;
+}
+
+.chamber-copy {
+  flex: 1;
+  min-width: 0;
+  margin-right: 24px;
+}
+
+
+.chamber-type {
+  display: block;
+  color: $text-muted;
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.chamber-name {
+  display: block;
+  margin-top: 8px;
+  color: $text-primary;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.chamber-count {
+  display: block;
+  margin-top: 6px;
+  color: $text-secondary;
+  font-size: 22px;
+  line-height: 1.5;
+}
+
+.chamber-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.chamber-side > * + * {
+  margin-top: 10px;
+}
+
+.chamber-badge {
+  padding: 8px 14px;
+  border-radius: $radius-pill;
+  background: rgba($warning-color, 0.16);
+  border: 1px solid rgba($warning-color, 0.24);
+}
+
+.chamber-badge-text {
+  display: block;
+  color: $warning-color;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.chamber-arrow {
+  color: $brand-light;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.chamber-preview {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  margin-left: -5px;
+  margin-right: -5px;
+  margin-bottom: -10px;
+}
+
+.chamber-preview > * {
+  margin: 0 5px 10px;
+}
+
+.ingredient-tag {
+  padding: 10px 16px;
+  border-radius: $radius-pill;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ingredient-tag-text {
+  display: block;
+  color: $text-secondary;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.chamber-empty-text {
+  color: $text-muted;
+  font-size: 22px;
+  line-height: 1.5;
+}
+
+.alert-card {
+  padding: 24px;
+}
+
+.alert-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.alert-copy {
+  flex: 1;
+  min-width: 0;
+  margin-right: 20px;
+}
+
+
+.alert-badge {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: $radius-pill;
+  background: rgba($warning-color, 0.16);
+  color: $warning-color;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.alert-name {
+  display: block;
+  margin-top: 14px;
+  color: $text-primary;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.alert-description {
+  display: block;
+  margin-top: 8px;
+  color: $text-secondary;
+  font-size: 22px;
+  line-height: 1.5;
+}
+
+.alert-note {
+  display: block;
+  margin-top: 16px;
+  color: $text-muted;
+  font-size: 22px;
+  line-height: 1.6;
+}
+
+.alert-cta {
+  flex-shrink: 0;
+  min-width: 144px;
+  padding: 20px 18px;
+  border-radius: $radius-pill;
+  background: linear-gradient(135deg, rgba(165, 180, 255, 0.16) 0%, rgba(124, 140, 255, 0.26) 100%);
+  border: 1px solid rgba(165, 180, 255, 0.14);
+  text-align: center;
+}
+
+.alert-cta-text {
+  color: $brand-light;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.empty-panel {
+  padding: 32px 28px;
+}
+
+.empty-title {
+  display: block;
+  color: $text-primary;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.empty-description {
+  display: block;
+  margin-top: 10px;
+  color: $text-secondary;
+  font-size: 22px;
+  line-height: 1.7;
+}
+
+.fridge-bottom-bar {
+  left: 24px;
+  right: 24px;
+}
