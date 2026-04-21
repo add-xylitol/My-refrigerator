@@ -1,0 +1,246 @@
+@import '../../styles/variables.scss';
+
+.meals-page {
+  min-height: 100vh;
+  background: transparent;
+}
+
+.meals-scroll {
+  height: 100vh;
+}
+
+.meals-content {
+  padding: 32px 24px calc(204px + env(safe-area-inset-bottom, 0));
+}
+
+.meals-content > * + * {
+  margin-top: 24px;
+}
+
+.meals-hero {
+  padding: 32px 28px;
+}
+
+.meals-title {
+  display: block;
+  color: $text-primary;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.meals-count {
+  display: block;
+  margin-top: 18px;
+  color: $brand-light;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.meals-summary {
+  display: block;
+  margin-top: 10px;
+  color: $text-secondary;
+  font-size: 24px;
+  line-height: 1.6;
+}
+
+.meals-empty {
+  padding: 32px 28px;
+}
+
+.meals-empty-eyebrow {
+  display: block;
+  color: $text-secondary;
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.meals-empty-title {
+  display: block;
+  margin-top: 10px;
+  color: $text-primary;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.meals-empty-description {
+  display: block;
+  margin-top: 10px;
+  color: $text-secondary;
+  font-size: 22px;
+  line-height: 1.7;
+}
+
+.meals-empty-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  min-height: 76px;
+  padding: 0 26px;
+  border-radius: $radius-pill;
+  background: linear-gradient(135deg, rgba(165, 180, 255, 0.18) 0%, rgba(124, 140, 255, 0.28) 100%);
+  border: 1px solid rgba(165, 180, 255, 0.14);
+}
+
+.meals-empty-action-text {
+  color: $brand-light;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.timeline-stack,
+.timeline-group-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-stack > * + * {
+  margin-top: 24px;
+}
+
+.timeline-group-list > * + * {
+  margin-top: 18px;
+}
+
+.timeline-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.timeline-group-day {
+  color: $text-primary;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.timeline-group-total {
+  color: $text-muted;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.timeline-entry {
+  display: flex;
+  align-items: stretch;
+}
+
+.timeline-rail {
+  width: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.timeline-dot {
+  width: 12px;
+  height: 12px;
+  margin-top: 24px;
+  border-radius: 50%;
+  background: $brand-light;
+  box-shadow: 0 0 0 6px rgba(165, 180, 255, 0.08);
+}
+
+.timeline-line {
+  width: 2px;
+  flex: 1;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.timeline-card {
+  flex: 1;
+  margin-left: 16px;
+  padding: 24px;
+}
+
+.timeline-photo {
+  width: 100%;
+  height: 260px;
+  margin-bottom: 18px;
+  border-radius: $radius-md;
+}
+
+.timeline-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.timeline-card-copy {
+  flex: 1;
+  min-width: 0;
+  margin-right: 18px;
+}
+
+.timeline-card-title {
+  display: block;
+  color: $text-primary;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.timeline-card-time {
+  display: block;
+  margin-top: 8px;
+  color: $text-muted;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.timeline-badge {
+  padding: 8px 14px;
+  border-radius: $radius-pill;
+  background: rgba(165, 180, 255, 0.14);
+  border: 1px solid rgba(165, 180, 255, 0.14);
+  flex-shrink: 0;
+}
+
+.timeline-badge-text {
+  display: block;
+  color: $brand-light;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.timeline-tags {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  margin-left: -5px;
+  margin-right: -5px;
+  margin-bottom: -10px;
+}
+
+.timeline-tags > * {
+  margin: 0 5px 10px;
+}
+
+.timeline-tag {
+  padding: 10px 16px;
+  border-radius: $radius-pill;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.timeline-tag-text {
+  display: block;
+  color: $text-secondary;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.meals-bottom-bar {
+  left: 24px;
+  right: 24px;
+}
