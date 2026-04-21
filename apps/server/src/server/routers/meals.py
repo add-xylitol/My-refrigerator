@@ -31,7 +31,7 @@ async def create_meal_log(
     logger.info("Create meal log for profile={} title={}", profile.profile_id, payload.title)
     data = gateway.insert_meal_log(
         UUID(profile.profile_id),
-        payload.model_dump(by_alias=False),
+        payload.model_dump(mode='json', by_alias=False),
     )
     if not data:
         raise HTTPException(status_code=500, detail="Failed to create meal log")

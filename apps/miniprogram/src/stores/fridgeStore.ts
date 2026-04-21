@@ -291,6 +291,9 @@ export const useFridgeStore = create<FridgeState>((set, get) => ({
     try {
       const created = await api.createMeal(payload)
       set((s) => ({ mealLogs: [created, ...s.mealLogs] }))
+    } catch (err) {
+      console.error('[createMeal]', err)
+      throw err
     } finally {
       set({ loading: false })
     }

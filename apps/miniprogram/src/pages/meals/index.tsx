@@ -16,20 +16,24 @@ export default function MealsPage() {
   const viewModel = useMemo(() => buildMealsViewModel({ mealLogs }), [mealLogs])
 
   const handleAddManual = async () => {
-    const res = await Taro.showModal({
-      title: '文字记录一餐',
-      editable: true,
-      placeholderText: '吃了什么？（如：番茄鸡蛋面）',
-      confirmText: '记录',
-      confirmColor: '#7c8cff',
-    })
-
-    if (res.confirm && res.content?.trim()) {
-      await createMeal({
-        title: res.content.trim(),
-        eaten_at: new Date().toISOString(),
+    try {
+      const res = await Taro.showModal({
+        title: '文字记录一餐',
+        editable: true,
+        placeholderText: '吃了什么？（如：番茄鸡蛋面）',
+        confirmText: '记录',
+        confirmColor: '#7c8cff',
       })
-      Taro.showToast({ title: '已记录', icon: 'success' })
+
+      if (res.confirm && res.content?.trim()) {
+        await createMeal({
+          title: res.content.trim(),
+          eaten_at: new Date().toISOString(),
+        })
+        Taro.showToast({ title: '已记录', icon: 'success' })
+      }
+    } catch {
+      Taro.showToast({ title: '记录失败', icon: 'error' })
     }
   }
 

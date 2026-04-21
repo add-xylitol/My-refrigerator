@@ -7,18 +7,17 @@ type FeaturedRecipeReasonCode = 'near-expiry' | 'quick' | 'available' | 'fallbac
 
 export type DiscoverViewModel = {
   decisionActions: string[]
-  introEyebrow: string
-  introTitle: string
-  introDescription: string
-  featuredRecipes: Array<{
+  stockSummary: string
+  canMakeNow: Array<{
     id: string
     title: string
     minutes?: number | null
-    summary?: string | null
-    availabilityStatus: 'ok' | 'missing'
-    availabilityLabel: string
-    reasonCode: FeaturedRecipeReasonCode
-    reasonToCookNow: string
+  }>
+  almostReady: Array<{
+    id: string
+    title: string
+    minutes?: number | null
+    missingLabel: string
   }>
   hasEmptyChatState: boolean
 }
@@ -40,34 +39,6 @@ const isNearExpiry = (item: ItemResponse, now: Date) => {
   return diff >= 0 && diff <= DAY_IN_MS * 2
 }
 
-const getReason = (recipe: RecipeSuggestion, nearExpiryItems: ItemResponse[]) => {
-  const haystack = `${recipe.title} ${recipe.summary ?? ''}`
-  const nearExpiryItemIds = new Set(nearExpiryItems.map((item) => item.id))
-  const nearExpiryNames = nearExpiryItems.map((item) => item.name)
-  const usesNearExpiryItem = recipe.usage.some((usage) => {
-    if (usage.item_id && nearExpiryItemIds.has(usage.item_id)) return true
-    return nearExpiryNames.includes(usage.name)
-  })
-
-  if (usesNearExpiryItem || nearExpiryNames.some((name) => haystack.includes(name))) {
-    return { code: 'near-expiry' as const, text: '优先消耗临期食材' }
-  }
-  if (recipe.minutes != null && recipe.minutes <= 10) {
-    return { code: 'quick' as const, text: '十分钟内可完成' }
-  }
-  if (recipe.all_available) {
-    return { code: 'available' as const, text: '食材已经基本齐了' }
-  }
-  return { code: 'fallback' as const, text: '先看思路再决定' }
-}
-
-const getAvailability = (recipe: RecipeSuggestion) => {
-  if (recipe.all_available) {
-    return { status: 'ok' as const, label: '食材齐全' }
-  }
-  return { status: 'missing' as const, label: `缺 ${recipe.missing_ingredients.length} 样` }
-}
-
 export const buildDiscoverViewModel = (input: BuildDiscoverViewModelInput): DiscoverViewModel => {
   const now = new Date(input.now ?? new Date().toISOString())
   const nearExpiryItems = input.items.filter((item) => isNearExpiry(item, now))
@@ -78,38 +49,50 @@ export const buildDiscoverViewModel = (input: BuildDiscoverViewModelInput): Disc
 
   const sourceRecipes = latestSuggestedRecipes && latestSuggestedRecipes.length > 0 ? latestSuggestedRecipes : input.recipes
 
-  const featuredRecipes = sourceRecipes
+  const sorted = [...sourceRecipes]
     .map((recipe) => {
-      const reason = getReason(recipe, nearExpiryItems)
-      const availability = getAvailability(recipe)
-      return {
-        id: recipe.id,
-        title: recipe.title,
-        minutes: recipe.minutes,
-        summary: recipe.summary,
-        availabilityStatus: availability.status,
-        availabilityLabel: availability.label,
-        reasonCode: reason.code,
-        reasonToCookNow: reason.text,
+      const haystack = `${recipe.title} ${recipe.summary ?? ''}`
+      const nearExpiryNames = nearExpiryItems.map((item) => item.name)
+      let priority: number
+      if (recipe.usage.some((u) => nearExpiryNames.includes(u.name)) || nearExpiryNames.some((n) => haystack.includes(n))) {
+        priority = 0
+      } else if (recipe.minutes != null && recipe.minutes <= 10) {
+        priority = 1
+      } else if (recipe.all_available) {
+        priority = 2
+      } else {
+        priority = 3
       }
+      return { recipe, priority }
     })
-    .sort((left, right) => {
-      const priority: Record<FeaturedRecipeReasonCode, number> = {
-        'near-expiry': 0,
-        quick: 1,
-        available: 2,
-        fallback: 3,
-      }
-      return priority[left.reasonCode] - priority[right.reasonCode]
-    })
-    .slice(0, 3)
+    .sort((a, b) => a.priority - b.priority)
+
+  const canMakeNow = sorted
+    .filter((s) => s.recipe.all_available)
+    .slice(0, 10)
+    .map((s) => ({
+      id: s.recipe.id,
+      title: s.recipe.title,
+      minutes: s.recipe.minutes,
+    }))
+
+  const almostReady = sorted
+    .filter((s) => !s.recipe.all_available && s.recipe.missing_ingredients.length <= 3)
+    .slice(0, 6)
+    .map((s) => ({
+      id: s.recipe.id,
+      title: s.recipe.title,
+      minutes: s.recipe.minutes,
+      missingLabel: s.recipe.missing_ingredients.map((m) => m.name).join('、'),
+    }))
+
+  const stockSummary = `${input.items.length} 食材 · ${input.condiments.length} 调料${nearExpiryItems.length > 0 ? ` · ${nearExpiryItems.length} 临期` : ''}`
 
   return {
     decisionActions: DECISION_ACTIONS,
-    introEyebrow: '今天吃什么 · 决策助手',
-    introTitle: '先做最合适的，不用先聊天。',
-    introDescription: `${input.items.length} 样食材，${input.condiments.length} 样调料，${nearExpiryItems.length} 样临期，先看推荐再决定。`,
-    featuredRecipes,
+    stockSummary,
+    canMakeNow,
+    almostReady,
     hasEmptyChatState: input.chatMessages.length === 0,
   }
 }
