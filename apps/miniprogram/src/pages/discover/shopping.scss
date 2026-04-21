@@ -1,0 +1,278 @@
+@import '../../styles/variables.scss';
+
+.shopping-page {
+  min-height: 100vh;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+.shop-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 12px;
+}
+
+.shop-back {
+  font-size: 28px;
+  color: $brand-light;
+  font-weight: 600;
+  padding: 8px;
+}
+
+.shop-topbar-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: $text-primary;
+  flex: 1;
+  text-align: center;
+}
+
+.shop-clear {
+  font-size: 24px;
+  color: $danger-color;
+  font-weight: 500;
+  padding: 8px;
+}
+
+.shop-topbar-spacer {
+  width: 80px;
+}
+
+.shop-scroll {
+  flex: 1;
+  height: calc(100vh - 100px);
+}
+
+.shop-content {
+  padding: 16px 24px 0;
+}
+
+.shop-content > * + * {
+  margin-top: 24px;
+}
+
+/* Section */
+.shop-section-title {
+  display: block;
+  color: $text-secondary;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.shop-section-count {
+  color: $brand-light;
+}
+
+/* Shopping card */
+.shop-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 24px;
+  transition: opacity 0.3s ease;
+}
+
+.shop-card.is-done {
+  opacity: 0.45;
+}
+
+.shop-list > * + * {
+  margin-top: 12px;
+}
+
+/* Checkbox */
+.shop-checkbox {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.shop-checkbox.is-checked {
+  background: $success-color;
+  border-color: $success-color;
+}
+
+.check-mark {
+  font-size: 22px;
+  font-weight: 700;
+  color: #050811;
+  line-height: 1;
+}
+
+.shop-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.shop-card-name {
+  display: block;
+  font-size: 28px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.shop-card-name.is-struck {
+  text-decoration: line-through;
+  color: $text-muted;
+}
+
+.shop-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.shop-card-qty {
+  font-size: 22px;
+  color: $text-secondary;
+}
+
+.shop-card-source {
+  font-size: 20px;
+  color: $brand-light;
+  padding: 2px 12px;
+  border-radius: $radius-pill;
+  background: rgba(165, 180, 255, 0.1);
+}
+
+.shop-card-delete {
+  font-size: 26px;
+  color: $text-muted;
+  padding: 8px;
+}
+
+/* Empty */
+.shop-empty {
+  padding: 60px 28px;
+  text-align: center;
+}
+
+.shop-empty-title {
+  display: block;
+  color: $text-primary;
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.shop-empty-description {
+  display: block;
+  margin-top: 10px;
+  color: $text-secondary;
+  font-size: 24px;
+  line-height: 1.6;
+}
+
+/* Bottom add bar */
+.shop-bottom-bar {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  z-index: 100;
+  padding: 14px;
+  background: rgba(8, 13, 24, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: $radius-xl;
+  box-shadow: $shadow-glow;
+  backdrop-filter: blur(24px);
+}
+
+.shop-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 88px;
+  background: linear-gradient(135deg, $brand-light 0%, $brand-color 100%);
+  border: none;
+  border-radius: $radius-pill;
+  box-shadow: 0 16px 36px rgba(124, 140, 255, 0.28);
+}
+
+.shop-add-btn::after {
+  border: none;
+}
+
+.shop-add-text {
+  color: #050811;
+  font-size: 30px;
+  font-weight: 600;
+}
+
+/* Add form (shown inline) */
+.add-form {
+  padding: 20px 24px;
+}
+
+.add-form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.add-input {
+  flex: 1;
+  min-height: 72px;
+  padding: 0 20px;
+  border-radius: $radius-pill;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: $text-primary;
+  font-size: 26px;
+}
+
+.add-input.is-qty {
+  flex: 0 0 160px;
+}
+
+.add-form-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.add-cancel-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: $radius-pill;
+}
+
+.add-cancel-text {
+  font-size: 26px;
+  color: $text-secondary;
+  font-weight: 500;
+}
+
+.add-confirm-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+  background: linear-gradient(135deg, $brand-light 0%, $brand-color 100%);
+  border: none;
+  border-radius: $radius-pill;
+}
+
+.add-confirm-btn::after {
+  border: none;
+}
+
+.add-confirm-text {
+  font-size: 26px;
+  color: #050811;
+  font-weight: 600;
+}
