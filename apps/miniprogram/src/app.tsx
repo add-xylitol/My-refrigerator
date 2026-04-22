@@ -11,8 +11,9 @@ function App({ children }: PropsWithChildren) {
     tryAutoLogin()
       .then(() => fetchAll())
       .catch(() => {
-        // Token expired — re-login with new session, then fetch
-        forceRelogin().then(() => fetchAll()).catch(console.error)
+        forceRelogin()
+          .then(() => fetchAll())
+          .catch(() => {})
       })
   })
 

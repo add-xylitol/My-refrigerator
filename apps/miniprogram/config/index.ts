@@ -11,7 +11,12 @@ const config = {
   defineConstants: {
     'process.env.API_BASE_URL': JSON.stringify('https://smart-fridge-247510-5-1423032080.sh.run.tcloudbase.com'),
   },
-  copy: { patterns: [], options: {} },
+  copy: {
+    patterns: [
+      { from: 'src/sitemap.json', to: 'dist/sitemap.json' },
+    ],
+    options: {},
+  },
   framework: 'react',
   compiler: 'webpack5',
   cache: { enable: false },
