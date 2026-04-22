@@ -15,73 +15,44 @@ export default function MealsPage() {
 
   const viewModel = useMemo(() => buildMealsViewModel({ mealLogs }), [mealLogs])
 
-  const handleAddManual = async () => {
-    try {
-      const res = await Taro.showModal({
-        title: '文字记录一餐',
-        editable: true,
-        placeholderText: '吃了什么？（如：番茄鸡蛋面）',
-        confirmText: '记录',
-        confirmColor: '#7c8cff',
-      })
-
-      if (res.confirm && res.content?.trim()) {
-        await createMeal({
-          title: res.content.trim(),
-          eaten_at: new Date().toISOString(),
-        })
-        Taro.showToast({ title: '已记录', icon: 'success' })
-      }
-    } catch {
-      Taro.showToast({ title: '记录失败', icon: 'error' })
-    }
-  }
-
-  const handlePhotoMeal = async () => {
-    try {
-      const mediaRes = await Taro.chooseMedia({
-        count: 1,
-        mediaType: ['image'],
-        sizeType: ['compressed'],
-      })
-      const tempPath = mediaRes.tempFiles[0].tempFilePath
-      const uploadRes = await api.uploadPhoto(tempPath)
-      const modalRes = await Taro.showModal({
-        title: '记录这一餐',
-        editable: true,
-        placeholderText: '吃了什么？',
-        confirmText: '记录',
-        confirmColor: '#7c8cff',
-      })
-
-      if (modalRes.confirm) {
-        await createMeal({
-          title: modalRes.content?.trim() || '一餐',
-          photo_url: uploadRes.url,
-          eaten_at: new Date().toISOString(),
-        })
-        Taro.showToast({ title: '已记录', icon: 'success' })
-      }
-    } catch (err: any) {
-      if (err.errMsg?.includes('cancel')) return
-      Taro.showToast({ title: '记录失败', icon: 'error' })
-    }
-  }
-
   const handleAdd = async () => {
     try {
-      const res = await Taro.showActionSheet({
-        itemList: ['拍照记录', '文字记录'],
+      // Step 1: ask for text (always required)
+      const textRes = await Taro.showModal({
+        title: '记录一餐',
+        editable: true,
+        placeholderText: '吃了什么？（如：番茄鸡蛋面）',
+        confirmText: '下一步',
+        confirmColor: '#7c8cff',
       })
+      if (!textRes.confirm || !textRes.content?.trim()) return
 
-      if (res.tapIndex === 0) {
-        await handlePhotoMeal()
-      } else if (res.tapIndex === 1) {
-        await handleAddManual()
+      const title = textRes.content.trim()
+
+      // Step 2: optionally add a photo
+      let photoUrl: string | null = null
+      try {
+        const mediaRes = await Taro.chooseMedia({
+          count: 1,
+          mediaType: ['image'],
+          sizeType: ['compressed'],
+        })
+        const tempPath = mediaRes.tempFiles[0].tempFilePath
+        const uploadRes = await api.uploadPhoto(tempPath)
+        photoUrl = uploadRes.url
+      } catch {
+        // User cancelled photo selection — continue without photo
       }
-    } catch (err: any) {
-      if (err.errMsg?.includes('cancel')) return
-      Taro.showToast({ title: '操作失败', icon: 'error' })
+
+      // Step 3: create meal
+      await createMeal({
+        title,
+        photo_url: photoUrl,
+        eaten_at: new Date().toISOString(),
+      })
+      Taro.showToast({ title: '已记录', icon: 'success' })
+    } catch {
+      Taro.showToast({ title: '记录失败', icon: 'error' })
     }
   }
 
