@@ -12,6 +12,7 @@ export default defineAppConfig({
     'pages/profile/condiments',
     'pages/profile/shelves',
     'pages/camera/index',
+    'pages/meals/detail',
   ],
   window: {
     backgroundTextStyle: 'dark',

@@ -15,22 +15,27 @@ export default function MealsPage() {
 
   const viewModel = useMemo(() => buildMealsViewModel({ mealLogs }), [mealLogs])
 
+  const handleMealTap = (mealId: string) => {
+    Taro.navigateTo({ url: `/pages/meals/detail?id=${mealId}` })
+  }
+
   const handleAdd = async () => {
     try {
-      // Step 1: ask for text (always required)
+      let title = ''
+      let photoUrl: string | null = null
+
+      // Step 1: text input (optional)
       const textRes = await Taro.showModal({
         title: '记录一餐',
         editable: true,
-        placeholderText: '吃了什么？（如：番茄鸡蛋面）',
-        confirmText: '下一步',
+        placeholderText: '吃了什么？（可留空后拍照）',
+        confirmText: '确定',
         confirmColor: '#7c8cff',
       })
-      if (!textRes.confirm || !textRes.content?.trim()) return
+      if (!textRes.confirm) return
+      title = textRes.content?.trim() || ''
 
-      const title = textRes.content.trim()
-
-      // Step 2: optionally add a photo
-      let photoUrl: string | null = null
+      // Step 2: photo (optional if text provided, required if no text)
       try {
         const mediaRes = await Taro.chooseMedia({
           count: 1,
@@ -41,12 +46,13 @@ export default function MealsPage() {
         const uploadRes = await api.uploadPhoto(tempPath)
         photoUrl = uploadRes.url
       } catch {
-        // User cancelled photo selection — continue without photo
+        if (!title) return // no text + no photo = abort
       }
 
-      // Step 3: create meal (let server default eaten_at)
+      if (!title && !photoUrl) return
+
       await createMeal({
-        title,
+        title: title || '一餐',
         photo_url: photoUrl,
       })
       Taro.showToast({ title: '已记录', icon: 'success' })
@@ -91,7 +97,7 @@ export default function MealsPage() {
                           {index !== group.entries.length - 1 && <View className='timeline-line' />}
                         </View>
 
-                        <View className='timeline-card glass-card'>
+                        <View className='timeline-card glass-card' onClick={() => handleMealTap(entry.id)}>
                           {entry.hasPhoto && entry.photoUrl && (
                             <Image className='timeline-photo' src={entry.photoUrl} mode='aspectFill' />
                           )}
