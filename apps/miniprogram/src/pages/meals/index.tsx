@@ -44,11 +44,10 @@ export default function MealsPage() {
         // User cancelled photo selection — continue without photo
       }
 
-      // Step 3: create meal
+      // Step 3: create meal (let server default eaten_at)
       await createMeal({
         title,
         photo_url: photoUrl,
-        eaten_at: new Date().toISOString(),
       })
       Taro.showToast({ title: '已记录', icon: 'success' })
     } catch {
